@@ -1,6 +1,6 @@
 FROM php:8.3-apache
 
-# Instala dependencias del sistema y extensiones PHP
+# Instala dependencias del sistema y extensiones PHP necesarias
 RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
@@ -15,7 +15,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     nodejs \
     npm \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip exif bcmath \
+    libcurl4-openssl-dev \
+    libgd-dev \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip exif bcmath gd curl \
     && pecl install imagick \
     && docker-php-ext-enable imagick
 
