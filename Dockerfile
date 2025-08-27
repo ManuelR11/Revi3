@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y \
     && pecl install imagick \
     && docker-php-ext-enable imagick
 
+# Instala Node.js 16 y npm# ...dependencias y extensiones PHP...
+
 # Instala Node.js 16 y npm
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
 
@@ -28,6 +30,17 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Copia los archivos del proyecto
 COPY . /var/www/html
+
+WORKDIR /var/www/html
+
+# Instala dependencias y compila assets
+RUN composer install --no-dev --optimize-autoloader
+RUN npm install
+RUN npm run production
+
+# Permisos y habilita mod_rewrite
+RUN chown -R www-data:www-data /var/www/html \
+    && a2enmod rewrite
 
 # Configura Apache para servir desde public/
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
@@ -39,18 +52,5 @@ ENV PORT 8080
 EXPOSE 8080
 RUN sed -i "s/80/\${PORT}/g" /etc/apache2/ports.conf /etc/apache2/sites-enabled/000-default.conf
 
-# Establece directorio de trabajo
-WORKDIR /var/www/html
-
-# Instala dependencias de PHP y JS, y compila assets
-RUN composer install --no-dev --optimize-autoloader
-RUN npm install
-# Ejecuta npm run production y muestra el error si falla
-RUN npm run production || (echo "ERROR en npm run production" && cat /var/www/html/npm-debug.log || true)
-
-# Permisos y habilita mod_rewrite
-RUN chown -R www-data:www-data /var/www/html \
-    && a2enmod rewrite
-
-# Comando final
 CMD ["apache2-foreground"]
+
