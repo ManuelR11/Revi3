@@ -22,8 +22,6 @@ Route::prefix('install')->name('installer.')->middleware(['web'])->group(functio
     Route::get('/', [InstallerController::class, 'index'])->name('index');
     Route::get('/requirement', [InstallerController::class, 'requirement'])->name('requirement');
     Route::get('/permission', [InstallerController::class, 'permission'])->name('permission');
-    Route::get('/license', [InstallerController::class, 'license'])->name('license');
-    Route::post('/license', [InstallerController::class, 'licenseStore'])->name('licenseStore');
     Route::get('/site', [InstallerController::class, 'site'])->name('site');
     Route::post('/site', [InstallerController::class, 'siteStore'])->name('siteStore');
     Route::get('/database', [InstallerController::class, 'database'])->name('database');

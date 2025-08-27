@@ -37,11 +37,9 @@
         @endforeach
     </ul>
 
-    @if ( ! isset($permissions['errors']))
-        <a href="{{ route('installer.license') }}"
-           class="w-fit mx-auto p-3 px-6 rounded-lg flex items-center justify-center gap-3 bg-primary text-white">
-            <span class="text-sm font-medium capitalize">{{ trans('installer.permission.next') }}</span>
-            <i class="fa-solid fa-angle-right text-sm"></i>
-        </a>
-    @endif
+    <a href="{{ route('installer.site') }}"
+    class="w-fit mx-auto p-3 px-6 rounded-lg flex items-center justify-center gap-3 bg-primary text-white">
+        <span class="text-sm font-medium capitalize">{{ trans('installer.permission.next') }}</span>
+        <i class="fa-solid fa-angle-right text-sm"></i>
+    </a>
 @endsection

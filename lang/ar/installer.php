@@ -20,17 +20,8 @@ return [
     'permission' => [
         'templateTitle'       => 'Step 2 | Permissions',
         'title'               => 'Permissions',
-        'next'                => 'License Setup',
+        'next'                => 'Permission Setup',
         'permission_checking' => 'Permission Checking'
-    ],
-    'license' => [
-        'templateTitle'       => 'Step 3 | License',
-        'title'               => 'License Setup',
-        'next'                => 'Site Setup',
-        'active_process'      => 'Active Process',
-        'label'               => [
-            'license_key' => 'License Key'
-        ]
     ],
     'site'     => [
         'templateTitle' => 'Step 4 | Site Setup',

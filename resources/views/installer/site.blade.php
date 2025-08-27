@@ -19,9 +19,6 @@
         <li onclick="handleLinkForInstaller('{{ route('installer.permission') }}')" class="done">
             <i class="fa-sharp fa-solid fa-unlock"></i>
         </li>
-        <li onclick="handleLinkForInstaller('{{ route('installer.license') }}')" class="done">
-            <i class="fa-solid fa-key"></i>
-        </li>
         <li class="active"><i class="fa-solid fa-gear"></i></li>
         <li><i class="fa-solid fa-database"></i></li>
         <li><i class="fa-solid fa-unlock-keyhole"></i></li>
