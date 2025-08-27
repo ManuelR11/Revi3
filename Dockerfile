@@ -41,9 +41,9 @@ RUN sed -i "s/80/\${PORT}/g" /etc/apache2/ports.conf /etc/apache2/sites-enabled/
 WORKDIR /var/www/html
 
 # Instala dependencias de PHP y JS, y compila assets
-RUN composer install --no-dev --optimize-autoloader \
-    && npm install \
-    && npm run production
+RUN composer install --no-dev --optimize-autoloader
+RUN npm install
+RUN npm run production
 
 # Permisos y habilita mod_rewrite
 RUN chown -R www-data:www-data /var/www/html \
