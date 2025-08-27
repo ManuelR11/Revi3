@@ -5650,22 +5650,22 @@ input:checked + div svg {
 	background-color: rgb(23 114 255/ 0.05);
 }
 
-.bg-\[\#FF4F99\] {
+.bg-\[\#1C346C\] {
 	--tw-bg-opacity: 1;
 	background-color: rgb(28 52 108 / var(--tw-bg-opacity));
 }
 
-.bg-\[\#8262FE\] {
+.bg-\[\#FCD44C\] {
 	--tw-bg-opacity: 1;
 	background-color: rgb(252 212 76 / var(--tw-bg-opacity));
 }
 
-.bg-\[\#567DFF\] {
+.bg-\[\#FC9139\] {
 	--tw-bg-opacity: 1;
 	background-color: rgb(252 145 57 / var(--tw-bg-opacity));
 }
 
-.bg-\[\#A953FF\] {
+.bg-\[\#8C4149\] {
 	--tw-bg-opacity: 1;
 	background-color: rgb(234 235 235 / var(--tw-bg-opacity));
 }
