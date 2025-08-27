@@ -36,6 +36,10 @@ WORKDIR /var/www/html
 # Instala dependencias y compila assets
 RUN composer install --no-dev --optimize-autoloader
 RUN npm install
+
+# Cambia permisos antes de compilar assets
+RUN chown -R www-data:www-data /var/www/html/public
+
 RUN npm run production
 
 # Permisos y habilita mod_rewrite
