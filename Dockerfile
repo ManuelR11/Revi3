@@ -13,13 +13,15 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    nodejs \
-    npm \
+    curl \
     libcurl4-openssl-dev \
     libgd-dev \
     && docker-php-ext-install pdo pdo_mysql mbstring zip exif bcmath gd curl \
     && pecl install imagick \
     && docker-php-ext-enable imagick
+
+# Instala Node.js 16 y npm
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
 
 # Instala Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -43,7 +45,8 @@ WORKDIR /var/www/html
 # Instala dependencias de PHP y JS, y compila assets
 RUN composer install --no-dev --optimize-autoloader
 RUN npm install
-RUN npm run production
+# Ejecuta npm run production y muestra el error si falla
+RUN npm run production || (echo "ERROR en npm run production" && cat /var/www/html/npm-debug.log || true)
 
 # Permisos y habilita mod_rewrite
 RUN chown -R www-data:www-data /var/www/html \
