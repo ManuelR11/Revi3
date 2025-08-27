@@ -37,6 +37,10 @@ WORKDIR /var/www/html
 RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 
+RUN chmod -R 775 storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && php artisan storage:link
+
 # Cambia permisos antes de compilar assets
 RUN chown -R www-data:www-data /var/www/html/public
 
