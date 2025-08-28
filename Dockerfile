@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     libcurl4-openssl-dev \
     libgd-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-png \
     && docker-php-ext-install pdo pdo_mysql mbstring zip exif bcmath gd curl \
     && pecl install imagick \
     && docker-php-ext-enable imagick
