@@ -14,12 +14,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     libcurl4-openssl-dev \
     libgd-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-png \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql mbstring zip exif bcmath gd curl \
     && pecl install imagick \
     && docker-php-ext-enable imagick
-
-# Instala Node.js 16 y npm# ...dependencias y extensiones PHP...
 
 # Instala Node.js 16 y npm
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
