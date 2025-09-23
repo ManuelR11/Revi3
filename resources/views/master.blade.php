@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="{{ asset('themes/default/fonts/lab/lab.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/default/fonts/typography/public/public.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/default/fonts/typography/rubik/rubik.css') }}">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1d4ed8">
 
     <!-- CUSTOM STYLE -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">

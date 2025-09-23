@@ -1,0 +1,30 @@
+{
+	"name": "Revi3",
+	"short_name": "Revi3",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#1d4ed8",
+	"icons": [
+		{
+			"src": "/images/theme/theme-logo-570x192.jpg",
+			"sizes": "570x192",
+			"type": "image/jpeg"
+		},
+		{
+			"src": "/images/theme/theme-logo-760x256.jpg",
+			"sizes": "760x256",
+			"type": "image/jpeg"
+		},
+		{
+			"src": "/images/theme/theme-logo-1520x512.jpg",
+			"sizes": "1520x512",
+			"type": "image/jpeg"
+		},
+		{
+			"src": "/images/theme/theme-logo-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	]
+}
