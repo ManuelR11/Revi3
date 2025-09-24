@@ -17,6 +17,7 @@
 		"barryvdh/laravel-dompdf": "^3.0",
 		"cashfree/cashfree-pg": "4.2",
 		"dipokhalder/laravel-env-editor": "^1.0",
+		"doctrine/dbal": "^4.3",
 		"google/apiclient": "^2.16",
 		"guzzlehttp/guzzle": "^7.2",
 		"iyzico/iyzipay-php": "^2.0",

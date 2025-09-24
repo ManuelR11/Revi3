@@ -1,38 +1,35 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Enums\OfferType;
 
 return new class extends Migration
 {
-    public function up(): void
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
     {
-        $driver = Schema::getConnection()->getDriverName();
-
-        if ($driver === 'mysql') {
-            DB::statement('ALTER TABLE offers MODIFY amount DECIMAL(19,6) NULL');
-        } elseif ($driver === 'pgsql') {
-            DB::statement('ALTER TABLE offers ALTER COLUMN amount DROP NOT NULL');
-        } elseif ($driver === 'sqlsrv') {
-            DB::statement('ALTER TABLE offers ALTER COLUMN amount DECIMAL(19,6) NULL');
-        } else {
-            throw new RuntimeException("Driver no soportado: {$driver}");
-        }
+        Schema::table('offers', function (Blueprint $table) {
+            $table->tinyInteger('type')->default(OfferType::DISCOUNT)->after('amount');
+            $table->decimal('combo_price', 10, 2)->nullable()->after('type');
+        });
     }
 
-    public function down(): void
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
     {
-        $driver = Schema::getConnection()->getDriverName();
-
-        if ($driver === 'mysql') {
-            DB::statement('ALTER TABLE offers MODIFY amount DECIMAL(19,6) NOT NULL');
-        } elseif ($driver === 'pgsql') {
-            DB::statement('ALTER TABLE offers ALTER COLUMN amount SET NOT NULL');
-        } elseif ($driver === 'sqlsrv') {
-            DB::statement('ALTER TABLE offers ALTER COLUMN amount DECIMAL(19,6) NOT NULL');
-        } else {
-            throw new RuntimeException("Driver no soportado: {$driver}");
-        }
+        
+        Schema::table('offers', function (Blueprint $table) {
+            $table->dropColumn(['type', 'combo_price']);
+        });
     }
 };
