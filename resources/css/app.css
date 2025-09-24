@@ -39,10 +39,6 @@
 	body {
 		@apply text-base font-normal font-rubik scroll-smooth text-paragraph bg-white;
 	}
-	body {
-		@apply text-base font-normal font-rubik scroll-smooth text-paragraph bg-white;
-		color: #e30613;
-	}
 }
 
 @layer components {
@@ -644,7 +640,12 @@
 		@apply text-emerald-600 bg-emerald-100 hover:bg-emerald-200;
 	}
 	.db-btn-fill.blue {
-		@apply text-blue-600 bg-blue-100 hover:bg-blue-200;
+		color: #e30613;
+		background-color: #ffe5e8;
+		transition: background-color 0.2s;
+	}
+	.db-btn-fill.blue:hover {
+		background-color: #ffc2cb;
 	}
 	.db-btn-fill.gray {
 		@apply text-gray-600 bg-gray-200 hover:bg-gray-300;
@@ -1082,7 +1083,8 @@
 		@apply text-green-600 bg-green-100;
 	}
 	.db-badge.blue {
-		@apply text-blue-600 bg-blue-100;
+		color: #e30613;
+		background-color: #ffe5e8;
 	}
 	.db-badge.red {
 		@apply text-red-600 bg-red-100;

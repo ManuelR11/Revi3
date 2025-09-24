@@ -565,7 +565,6 @@ video {
   font-weight: 400;
   --tw-text-opacity: 1;
   color: rgb(110 113 145 / var(--tw-text-opacity, 1));
-		color: #e30613;
 }
 .container {
   width: 100%;
@@ -3025,11 +3024,9 @@ input:checked + div svg {
   color: rgb(22 163 74 / var(--tw-text-opacity, 1));
 }
 .db-badge.blue {
-  --tw-bg-opacity: 1;
-  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));
-  --tw-text-opacity: 1;
-  color: rgb(37 99 235 / var(--tw-text-opacity, 1));
-}
+		color: #e30613;
+		background-color: #ffe5e8;
+	}
 .db-badge.red {
   --tw-bg-opacity: 1;
   background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));
