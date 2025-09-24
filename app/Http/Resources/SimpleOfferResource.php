@@ -16,13 +16,20 @@ class SimpleOfferResource extends JsonResource
      */
     public function toArray($request) : array
     {
+
+        $comboPrice = $this->combo_price;
         return [
-            'id'             => $this->id,
-            'name'           => $this->name,
-            'amount'         => $this->amount === null ? 0 : $this->amount,
-            'flat_price'     => $this->flat_price,
-            'convert_price'  => $this->convert_price,
-            'currency_price' => $this->currency_price
+            'id'                   => $this->id,
+            'name'                 => $this->name,
+            'type'                 => isset($this->type) ? (int) $this->type : null,
+            'amount'               => $this->amount === null ? 0 : $this->amount,
+            'flat_price'           => $this->flat_price,
+            'convert_price'        => $this->convert_price,
+            'currency_price'       => $this->currency_price,
+            'combo_price'          => $comboPrice,
+            'combo_price_flat'     => $comboPrice !== null ? AppLibrary::flatAmountFormat($comboPrice) : null,
+            'combo_price_convert'  => $comboPrice !== null ? AppLibrary::convertAmountFormat($comboPrice) : null,
+            'combo_price_currency' => $comboPrice !== null ? AppLibrary::currencyAmountFormat($comboPrice) : null,
         ];
     }
 }

@@ -14,7 +14,7 @@ class OfferItem extends Model
         'id'       => 'integer',
         'offer_id' => 'integer',
         'item_id'  => 'integer',
-        'quiantity'=> 'integer'
+        'quiantity'=> 'integer',
     ];
 
     public function offer(): \Illuminate\Database\Eloquent\Relations\BelongsTo

@@ -9,8 +9,7 @@
                     class="text-sm mb-3 font-medium font-rubik capitalize text-ellipsis whitespace-nowrap overflow-hidden">
                     {{ textShortener(item.name, 25) }}</h3>
                 <div class="flex items-center justify-between gap-2">
-                    <h4 class="font-rubik">{{ item.offer.length > 0 ? item.offer[0].currency_price : item.currency_price
-                    }}</h4>
+                    <h4 class="font-rubik">{{ itemCurrencyPrice(item) }}</h4>
                     <button @click.prevent="variationModalShow(item)" data-modal="#item-variation-modal"
                         class="db-product-cart pos-add-button flex items-center gap-1.5 rounded-3xl capitalize text-sm font-medium font-rubik py-1 px-2 shadow-cardCart transition bg-white hover:bg-primary">
                         <i class="lab lab-bag-2 font-fill-primary transition lab-font-size-14"></i>
@@ -51,8 +50,7 @@
                             </button>
                         </div>
                         <p class="text-xs mb-2">{{ item.description }}</p>
-                        <h4 class="text-sm font-semibold">{{ item.offer.length > 0 ? item.offer[0].currency_price :
-                            item.currency_price }}</h4>
+                        <h4 class="text-sm font-semibold">{{ itemCurrencyPrice(item) }}</h4>
                     </div>
                 </div>
                 <button class="modal-close lab-close-circle-line font-fill-danger lab-font-size-24"
@@ -305,6 +303,56 @@ export default {
         currencyFormat: function (amount, decimal, currency, position) {
             return appService.currencyFormat(amount, decimal, currency, position);
         },
+        primaryOffer(entity) {
+            if (entity && Array.isArray(entity.offer) && entity.offer.length > 0) {
+                return entity.offer[0];
+            }
+            return null;
+        },
+        itemPriceData(item) {
+            const fallbackConvert = Number(item?.convert_price ?? 0);
+            const fallbackCurrency = item?.currency_price ?? '';
+            const offer = this.primaryOffer(item);
+
+            if (offer) {
+                const convert = offer.convert_price !== undefined ? Number(offer.convert_price) : fallbackConvert;
+                const currency = offer.currency_price ?? fallbackCurrency;
+                return { convert, currency, offerType: Number(offer.type ?? 0) };
+            }
+
+            return { convert: fallbackConvert, currency: fallbackCurrency, offerType: null };
+        },
+        itemCurrencyPrice(item) {
+            return this.itemPriceData(item).currency;
+        },
+        itemConvertPrice(item) {
+            return this.itemPriceData(item).convert;
+        },
+        addonPriceData(addon) {
+            if (!addon) {
+                return { convert: 0, currency: '', offerType: null };
+            }
+
+            const fallbackConvert = addon.addon_item_convert_price !== undefined
+                ? Number(addon.addon_item_convert_price)
+                : Number(addon.convert_price ?? 0);
+            const fallbackCurrency = addon.addon_item_currency_price ?? addon.currency_price ?? '';
+            const offer = this.primaryOffer(addon);
+
+            if (offer) {
+                const convert = offer.convert_price !== undefined ? Number(offer.convert_price) : fallbackConvert;
+                const currency = offer.currency_price ?? fallbackCurrency;
+                return { convert, currency, offerType: Number(offer.type ?? 0) };
+            }
+
+            return { convert: fallbackConvert, currency: fallbackCurrency, offerType: null };
+        },
+        addonCurrencyPrice(addon) {
+            return this.addonPriceData(addon).currency;
+        },
+        addonConvertPrice(addon) {
+            return this.addonPriceData(addon).convert;
+        },
         infoModalShow: function (name, caution) {
             this.itemInfo = {
                 name: name,
@@ -346,9 +394,10 @@ export default {
                     this.temp.item_id = this.item.id;
                     this.temp.quantity = 1;
                     this.temp.discount = 0;
-                    this.temp.convert_price = item.offer.length > 0 ? item.offer[0].convert_price : item.convert_price;
-                    this.temp.currency_price = item.offer.length > 0 ? item.offer[0].currency_price : item.currency_price;
-                    this.temp.total_price = (item.offer.length > 0 ? item.offer[0].convert_price : item.convert_price) + this.temp.item_variation_total;
+                    const basePrice = this.itemPriceData(item);
+                    this.temp.convert_price = basePrice.convert;
+                    this.temp.currency_price = basePrice.currency;
+                    this.temp.total_price = basePrice.convert + this.temp.item_variation_total;
 
                     const modalTarget = this.$refs.itemVariationModal;
                     modalTarget?.classList?.add("active");
@@ -442,7 +491,8 @@ export default {
 
             this.temp.item_variation_total = item_variation_total;
             this.temp.item_extra_total = item_extra_total;
-            this.temp.total_price = parseFloat((((this.item.offer.length > 0 ? this.item.offer[0].convert_price : this.item.convert_price) + this.temp.item_variation_total + this.temp.item_extra_total) * this.temp.quantity) + item_addon_total);
+            const basePrice = this.itemPriceData(this.item);
+            this.temp.total_price = parseFloat(((basePrice.convert + this.temp.item_variation_total + this.temp.item_extra_total) * this.temp.quantity) + item_addon_total);
         },
         quantityUp: function () {
             if (this.temp.quantity === 0) {
@@ -502,14 +552,15 @@ export default {
         },
         changeAddon: function (addon) {
             if (typeof this.addons[addon.id] === "undefined") {
+                const addonPrice = this.addonPriceData(addon);
                 this.addons[addon.id] = {
                     name: addon.addon_item_name,
                     image: addon.thumb,
                     item_id: addon.item_addon_id,
                     quantity: this.addonQuantity[addon.id],
                     discount: 0,
-                    currency_price: addon.offer.length > 0 ? addon.offer[0].currency_price : addon.addon_item_currency_price,
-                    convert_price: addon.offer.length > 0 ? addon.offer[0].convert_price : addon.addon_item_convert_price,
+                    currency_price: addonPrice.currency,
+                    convert_price: addonPrice.convert,
                     item_variations: {
                         variations: {},
                         names: {}

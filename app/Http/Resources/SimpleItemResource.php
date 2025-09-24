@@ -44,34 +44,54 @@ class SimpleItemResource extends JsonResource
             // 👇 Solo aplica descuento porcentual si type === DISCOUNT;
             // si es COMBO, usa el precio de combo directo de BD.
             "offer" => SimpleOfferResource::collection(
-                $this->offer->filter(function ($offer) use ($price) {
-                    $isActive = Carbon::now()->between($offer->start_date, $offer->end_date)
-                               && $offer->status === Status::ACTIVE;
+                $this->mergeOffers()
+                    ->unique('id')
+                    ->filter(function ($offer) {
+                        return Carbon::now()->between($offer->start_date, $offer->end_date)
+                            && (int) $offer->status === Status::ACTIVE;
+                    })
+                    ->map(function ($offer) use ($price) {
+                        $isDiscount = (int) $offer->type === OfferType::DISCOUNT;
+                        $isComboForItem = (int) $offer->type === OfferType::COMBO
+                            && (int) $offer->combo_item_id === (int) $this->id;
 
-                    if (!$isActive) {
-                        return false;
-                    }
+                        if (!$isDiscount && !$isComboForItem) {
+                            return null;
+                        }
 
-                    $final = $price;
+                        $final = $price;
 
-                    if ((int)$offer->type === OfferType::DISCOUNT) {
-                        // porcentaje: amount = 0..100
-                        $final = $price - ($price * ((float)$offer->amount / 100));
-                    } elseif ((int)$offer->type === OfferType::COMBO) {
-                        // combo: tomar precio de combo desde BD (sin fórmulas)
-                        // si no tienes columna combo_price y reutilizas amount, usa $offer->amount
-                        $final = $offer->combo_price ?? $offer->amount ?? $price;
-                    }
+                        if ($isDiscount) {
+                            $final = $price - ($price * ((float) $offer->amount / 100));
+                        } elseif ($isComboForItem) {
+                            $final = $offer->combo_price ?? $offer->amount ?? $price;
+                        }
 
-                    // Inyecta precios formateados para este offer específico
-                    $offer->flat_price     = AppLibrary::flatAmountFormat($final);
-                    $offer->convert_price  = AppLibrary::convertAmountFormat($final);
-                    $offer->currency_price = AppLibrary::currencyAmountFormat($final);
+                        // Inyecta precios formateados para este offer específico
+                        $offer->flat_price     = AppLibrary::flatAmountFormat($final);
+                        $offer->convert_price  = AppLibrary::convertAmountFormat($final);
+                        $offer->currency_price = AppLibrary::currencyAmountFormat($final);
 
-                    return true; // mantener el offer en la colección
-                })
+                        return $offer;
+                    })
+                    ->filter()
+                    ->values()
             ),
         ];
+    }
+
+    private function mergeOffers()
+    {
+        $offers = collect($this->offer ?? []);
+
+        if ($this->relationLoaded('comboOffer') && $this->comboOffer) {
+            $offers = collect([$this->comboOffer])->merge($offers);
+        } elseif ($this->comboOffer) {
+            // En caso de que no se haya cargado la relación pero exista comboOffer
+            $offers = collect([$this->comboOffer])->merge($offers);
+        }
+
+        return $offers;
     }
 
     private function itemAttributeList($variations)

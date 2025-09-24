@@ -19,29 +19,36 @@ class ItemAddonResource extends JsonResource
         // Precio base del addon
         $basePrice = $this?->addonItem?->price ?? 0.0;
 
-        // Filtra ofertas activas y calcula el precio final por oferta
-        $offers = $this->addonItem?->offer?->filter(function ($offer) {
-            return Carbon::now()->between($offer->start_date, $offer->end_date)
-                && $offer->status == Status::ACTIVE;
-        })->map(function ($offer) use ($basePrice) {
-            // Determina precio final según type
-            if ((int)$offer->type === OfferType::DISCOUNT) {
-                $final = $basePrice - ($basePrice * ((float)$offer->amount / 100));
-            } else { // COMBO
-                // usa directamente el precio de combo desde BD
-                $final = $offer->combo_price ?? $offer->amount ?? $basePrice;
-            }
+        $addonItemId = optional($this->addonItem)->id;
 
-            // Inyecta formateos SIN volver a descontar
-            $offer->flat_price     = AppLibrary::flatAmountFormat($final);
-            $offer->convert_price  = AppLibrary::convertAmountFormat($final);
-            $offer->currency_price = AppLibrary::currencyAmountFormat($final);
+        $offers = $this->collectAddonOffers()
+            ->filter(function ($offer) {
+                return Carbon::now()->between($offer->start_date, $offer->end_date)
+                    && (int) $offer->status === Status::ACTIVE;
+            })
+            ->map(function ($offer) use ($basePrice, $addonItemId) {
+                $isDiscount = (int) $offer->type === OfferType::DISCOUNT;
+                $isComboForAddon = (int) $offer->type === OfferType::COMBO
+                    && (int) $offer->combo_item_id === (int) $addonItemId;
 
-            // Guarda también el número crudo para cálculos (no lo expongas si no quieres)
-            $offer->final_numeric  = $final;
+                if (!$isDiscount && !$isComboForAddon) {
+                    return null;
+                }
 
-            return $offer;
-        }) ?? collect();
+                // Inyecta formateos SIN volver a descontar
+                if ($isDiscount) {
+                    $final = $basePrice - ($basePrice * ((float) $offer->amount / 100));
+                } else {
+                    $final = $offer->combo_price ?? $offer->amount ?? $basePrice;
+                }
+
+                $offer->flat_price     = AppLibrary::flatAmountFormat($final);
+                $offer->convert_price  = AppLibrary::convertAmountFormat($final);
+                $offer->currency_price = AppLibrary::currencyAmountFormat($final);
+                $offer->final_numeric  = $final;
+
+                return $offer;
+            })->filter();
 
         // Toma la primera oferta activa (si existe) para el total
         $offerPriceNumeric = $offers->isNotEmpty()
@@ -87,6 +94,23 @@ class ItemAddonResource extends JsonResource
             // 👇 Ofertas ya con precio final en cada una (sin doble descuento)
             'offer'                          => SimpleOfferResource::collection($offers),
         ];
+    }
+
+    private function collectAddonOffers()
+    {
+        if (!$this->addonItem) {
+            return collect();
+        }
+
+        $offers = collect($this->addonItem->offer ?? []);
+
+        if ($this->addonItem->relationLoaded('comboOffer') && $this->addonItem->comboOffer) {
+            $offers = collect([$this->addonItem->comboOffer])->merge($offers);
+        } elseif ($this->addonItem->comboOffer) {
+            $offers = collect([$this->addonItem->comboOffer])->merge($offers);
+        }
+
+        return $offers;
     }
 
     private function variationTotal()

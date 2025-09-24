@@ -942,6 +942,12 @@ video {
   --tw-bg-opacity: 1;
   background-color: rgb(2252 77 37 / var(--tw-bg-opacity, 1));
 }
+.\!addon.active {
+  --tw-border-opacity: 1 !important;
+  border-color: rgb(2252 77 37 / var(--tw-border-opacity, 1)) !important;
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(220 234 255 / var(--tw-bg-opacity, 1)) !important;
+}
 .addon.active {
   --tw-border-opacity: 1 !important;
   border-color: rgb(2252 77 37 / var(--tw-border-opacity, 1)) !important;
