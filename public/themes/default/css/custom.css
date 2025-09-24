@@ -162,7 +162,7 @@
 }
 
 .font-fill-primary-toggle {
-	color: #fc4d25;
+	color: #e30613;
 }
 
 @media (max-width: 639px) {
@@ -177,7 +177,7 @@
 
 @media (max-width: 639px) {
 	.font-fill-paragraph-toggle {
-		color: #fc4d25 !important;
+		color: #e30613 !important;
 	}
 }
 
@@ -190,7 +190,7 @@
 }
 
 .font-fill-primary {
-	color: #fc4d25;
+	color: #e30613;
 }
 
 .font-fill-paragraph {
@@ -214,7 +214,7 @@
 }
 
 .info-btn:hover .font-fill-paragraph {
-	color: #fc4d25;
+	color: #e30613;
 }
 
 .lab-font-bold {
@@ -426,7 +426,7 @@
 }
 
 .kitchen-board.db-tab-btn.active {
-	background-color: #fc4d25 !important;
+	background-color: #e30613 !important;
 	color: white !important;
 	border-radius: 8px;
 }
