@@ -32,7 +32,6 @@
 					alt="qrcode"
 				/>
 				<div v-if="tableLink" class="text-center mt-2">
-					<span class="block">Aqui esssss</span>
 					<a
 						:href="tableLink"
 						target="_blank"
