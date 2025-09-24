@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\PaginateRequest;
 use App\Http\Requests\OfferItemRequest;
 use App\Libraries\QueryExceptionLibrary;
+use App\Models\ItemCategory;
+use App\Enums\OfferType;
+use App\Enums\ItemType;
+use App\Models\Item;
+use App\Enums\Ask;
 
 class OfferItemService
 {
@@ -64,6 +69,10 @@ class OfferItemService
                 // suma la cantidad (evita “double-insert”)
                 $offerItem->increment('quantity', $qty);
 
+                OfferService::updateComboItemDescription(
+                    $offer->fresh(['offerItems.item', 'comboItem'])
+                );
+
                 return $offerItem->fresh(['offer', 'item']);
             });
         } catch (Exception $exception) {
@@ -77,6 +86,9 @@ class OfferItemService
         try {
             if ($offer->id == $offerItem->offer_id) {
                 $offerItem->delete();
+                OfferService::updateComboItemDescription(
+                    $offer->fresh(['offerItems.item', 'comboItem'])
+                );
             } else {
                 throw new Exception(trans('all.item_match'), 422);
             }

@@ -51,6 +51,7 @@ class OfferResource extends JsonResource
             // === Tipo ===
             'type'               => $type,
             'type_label'         => $typeLabel,
+            'combo_item_id'      => $this->combo_item_id,
 
             // === Compatibilidad (legacy) ===
             // amount original; útil si aún tienes clientes antiguos

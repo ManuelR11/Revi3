@@ -45,6 +45,7 @@ class SimpleOfferListResource extends JsonResource
             // Tipo explícito
             'type'               => $type,
             'type_label'         => $typeLabel,
+            'combo_item_id'      => $this->combo_item_id,
 
             // Compatibilidad (legacy)
             'amount'             => $this->amount === null ? 0 : $this->amount,
