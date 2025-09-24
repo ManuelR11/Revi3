@@ -56,6 +56,7 @@ return array(
     'App\\Enums\\IsAdvance' => $baseDir . '/app/Enums/IsAdvance.php',
     'App\\Enums\\ItemType' => $baseDir . '/app/Enums/ItemType.php',
     'App\\Enums\\MenuType' => $baseDir . '/app/Enums/MenuType.php',
+    'App\\Enums\\OfferType' => $baseDir . '/app/Enums/OfferType.php',
     'App\\Enums\\OrderStatus' => $baseDir . '/app/Enums/OrderStatus.php',
     'App\\Enums\\OrderType' => $baseDir . '/app/Enums/OrderType.php',
     'App\\Enums\\OtpDigitLimit' => $baseDir . '/app/Enums/OtpDigitLimit.php',

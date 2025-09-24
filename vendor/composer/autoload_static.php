@@ -1076,6 +1076,7 @@ class ComposerStaticInite3c1c0507827e7eaffc0aa1d3114c968
         'App\\Enums\\IsAdvance' => __DIR__ . '/../..' . '/app/Enums/IsAdvance.php',
         'App\\Enums\\ItemType' => __DIR__ . '/../..' . '/app/Enums/ItemType.php',
         'App\\Enums\\MenuType' => __DIR__ . '/../..' . '/app/Enums/MenuType.php',
+        'App\\Enums\\OfferType' => __DIR__ . '/../..' . '/app/Enums/OfferType.php',
         'App\\Enums\\OrderStatus' => __DIR__ . '/../..' . '/app/Enums/OrderStatus.php',
         'App\\Enums\\OrderType' => __DIR__ . '/../..' . '/app/Enums/OrderType.php',
         'App\\Enums\\OtpDigitLimit' => __DIR__ . '/../..' . '/app/Enums/OtpDigitLimit.php',
