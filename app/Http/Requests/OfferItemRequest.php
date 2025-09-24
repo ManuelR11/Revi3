@@ -29,7 +29,7 @@ class OfferItemRequest extends FormRequest
             'item_id'   => [
                 'required',
                 'numeric',
-                Rule::unique("offer_items", "item_id")->ignore($this->route('offerItem.id'))->where('offer_id', $this->route('offer.id')),
+                
             ],
         ];
     }

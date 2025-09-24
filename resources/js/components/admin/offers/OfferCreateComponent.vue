@@ -19,12 +19,64 @@
                         }}</small>
                     </div>
                     <div class="form-col-12 sm:form-col-6">
+                        <label class="db-field-title required">{{ $t("label.type") }}</label>
+                        <div class="db-field-radio-group">
+                            <div class="db-field-radio">
+                                <div class="custom-radio">
+                                    <input type="radio"
+                                        class="custom-radio-field"
+                                        id="type-discount"
+                                        v-model="props.form.type"
+                                        :value="enums.offerTypeEnum.DISCOUNT" />
+                                    <span class="custom-radio-span"></span>
+                                </div>
+                            <label for="type-discount" class="db-field-label">{{ $t("label.discount") }}</label>
+                        </div>
+
+                        <div class="db-field-radio">
+                            <div class="custom-radio">
+                                <input type="radio"
+                                    class="custom-radio-field"
+                                    id="type-combo"
+                                    v-model="props.form.type"
+                                    :value="enums.offerTypeEnum.COMBO" />
+                                <span class="custom-radio-span"></span>
+                            </div>
+                        <label for="type-combo" class="db-field-label">{{ $t("label.combo") }}</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campo condicional para DISCOUNT -->
+                <div class="form-col-12 sm:form-col-6" v-if="props.form.type === enums.offerTypeEnum.DISCOUNT">
+                    <label for="amount" class="db-field-title required">
+                        {{ $t("label.discount_percent") }}
+                    </label>
+                        <input v-model="props.form.amount"
+                            @keypress="floatNumber($event)"
+                            :class="errors.amount ? 'invalid' : ''"
+                            type="text" id="amount" class="db-field-control" />
+                        <small class="db-field-alert" v-if="errors.amount">{{ errors.amount[0] }}</small>
+                    </div>
+
+                    <!-- Campo condicional para COMBO -->
+                    <div class="form-col-12 sm:form-col-6" v-else>
+                        <label for="combo_price" class="db-field-title required">
+                            {{ $t("label.combo_price") }}
+                        </label>
+                        <input v-model="props.form.combo_price"
+                            @keypress="floatNumber($event)"
+                            :class="errors.combo_price ? 'invalid' : ''"
+                            type="text" id="combo_price" class="db-field-control" />
+                        <small class="db-field-alert" v-if="errors.combo_price">{{ errors.combo_price[0] }}</small>
+                    </div>
+                    <div class="form-col-12 sm:form-col-6">
                         <label for="amount" class="db-field-title required">
-                            {{ $t("label.discount_percentage") }}
+                            {{ $t("label.amount") }}
                         </label>
                         <input v-model="props.form.amount" v-on:keypress="floatNumber($event)"
                             v-bind:class="errors.amount ? 'invalid' : ''" type="text" id="amount"
-                            class="db-field-control" />
+                            class="db-field-control" value="0.5" />
                         <small class="db-field-alert" v-if="errors.amount">{{ errors.amount[0] }}</small>
                     </div>
 
@@ -109,6 +161,7 @@ import Datepicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import LoadingComponent from "../components/LoadingComponent";
 import statusEnum from "../../../enums/modules/statusEnum";
+import offerTypeEnum from "../../../enums/modules/offerTypeEnum";
 import alertService from "../../../services/alertService";
 import appService from "../../../services/appService";
 
@@ -118,14 +171,17 @@ export default {
     props: ["props"],
     data() {
         return {
-            loading: {
-                isActive: false,
-            },
+            loading: { isActive: false },
             enums: {
-                statusEnum: statusEnum,
+                statusEnum,
                 statusEnumArray: {
                     [statusEnum.ACTIVE]: this.$t("label.active"),
                     [statusEnum.INACTIVE]: this.$t("label.inactive"),
+                },
+                offerTypeEnum, // 👈 nuevo
+                offerTypeArray: {
+                    [offerTypeEnum.DISCOUNT]: this.$t("label.discount"),
+                    [offerTypeEnum.COMBO]: this.$t("label.combo"),
                 },
             },
             image: "",
@@ -150,7 +206,10 @@ export default {
             this.errors = {};
             this.$props.props.form = {
                 name: "",
-                amount: "",
+                // Campos condicionales:
+                amount: "",         // para DISCOUNT (%)
+                combo_price: "",    // para COMBO (dinero)
+                type: offerTypeEnum.DISCOUNT, // default
                 start_date: "",
                 end_date: "",
                 status: statusEnum.ACTIVE,
@@ -165,7 +224,10 @@ export default {
             this.errors = {};
             this.$props.props.form = {
                 name: "",
-                amount: "",
+                // Campos condicionales:
+                amount: "",         // para DISCOUNT (%)
+                combo_price: "",    // para COMBO (dinero)
+                type: offerTypeEnum.DISCOUNT, // default
                 start_date: "",
                 end_date: "",
                 status: statusEnum.ACTIVE,

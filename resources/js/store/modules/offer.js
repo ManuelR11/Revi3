@@ -13,6 +13,8 @@ export const offer = {
         temp: {
             temp_id: null,
             isEditing: false,
+            type: null,         // 👈 nuevo (1=DISCOUNT, 2=COMBO)
+            combo_price: null,  // 👈 nuevo
         },
     },
     getters: {
@@ -57,20 +59,38 @@ export const offer = {
             return new Promise((resolve, reject) => {
                 let method = axios.post;
                 let url = '/admin/offer';
-                if (this.state['offer'].temp.isEditing) {
+                const temp = context.getters.temp; // {isEditing, temp_id, type, combo_price}
+
+                if (temp.isEditing) {
                     method = axios.post;
-                    url = `/admin/offer/${this.state['offer'].temp.temp_id}`;
+                    url = `/admin/offer/${temp.temp_id}`;
                 }
-                method(url, payload.form).then(res => {
-                    context.dispatch('lists', payload.search).then().catch();
+
+                const fd = payload.form; // ya viene como FormData
+
+                // Asegura que enviamos type
+                if (!fd.has('type') && temp.type != null) {
+                    fd.append('type', temp.type);
+                }
+
+                // Si es COMBO, asegura combo_price (y no relies solo en amount)
+                // (Si tu formulario manda ambos, el backend validará según type)
+                if (temp.type === 2 /* COMBO */) {
+                    // si el form no lo mandó, intenta desde temp
+                    if (!fd.has('combo_price') && temp.combo_price != null) {
+                        fd.append('combo_price', temp.combo_price);
+                    }
+                }
+
+                method(url, fd).then(res => {
+                    context.dispatch('lists', payload.search).catch(() => {});
                     context.commit('reset');
                     resolve(res);
-                }).catch((err) => {
-                    reject(err);
-                });
+                }).catch(reject);
             });
         },
-        edit: function (context, payload) {
+        edit(context, payload) {
+            // payload: { id, type, combo_price }
             context.commit('temp', payload);
         },
         destroy: function (context, payload) {
@@ -148,16 +168,26 @@ export const offer = {
                 }
             }
         },
-        show: function (state, payload) {
-            state.show = payload;
-        },
-        temp: function (state, payload) {
-            state.temp.temp_id = payload;
+        temp(state, payload) {
+            // payload puede ser: { id, type, combo_price }
+            state.temp.temp_id = payload?.id ?? payload; // mantiene compatibilidad
             state.temp.isEditing = true;
+            if (typeof payload === 'object' && payload !== null) {
+                state.temp.type = payload.type ?? null;
+                state.temp.combo_price = payload.combo_price ?? null;
+            }
         },
-        reset: function(state) {
+        reset(state) {
             state.temp.temp_id = null;
             state.temp.isEditing = false;
-        }
+            state.temp.type = null;         // 👈 limpia
+            state.temp.combo_price = null;  // 👈 limpia
+        },
+        show(state, payload) {
+            state.show = payload;
+            // Cuando haces show (abrir en edición), aprovecha para llenar temp también
+            state.temp.type = payload?.type ?? state.temp.type;
+            state.temp.combo_price = payload?.combo_price ?? state.temp.combo_price;
+        },
     },
 }

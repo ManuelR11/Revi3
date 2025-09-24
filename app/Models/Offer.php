@@ -13,7 +13,7 @@ class Offer extends Model implements HasMedia
     use HasFactory, InteractsWithMedia;
 
     protected $table = "offers";
-    protected $fillable = ['name', 'slug', 'amount', 'status', 'start_date', 'end_date'];
+    protected $fillable = ['name', 'slug', 'amount', 'status', 'start_date', 'end_date', 'type', 'combo_price'];
     protected $casts = [
         'id'         => 'integer',
         'name'       => 'string',
@@ -22,6 +22,8 @@ class Offer extends Model implements HasMedia
         'status'     => 'integer',
         'start_date' => 'datetime',
         'end_date'   => 'datetime',
+        'type'       => 'integer',
+        'combo_price'=> 'decimal'
     ];
 
     public function items(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

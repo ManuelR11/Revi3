@@ -2,23 +2,18 @@
 
 namespace App\Http\Resources;
 
-
 use App\Enums\Status;
 use App\Libraries\AppLibrary;
+use App\Enums\OfferType; // 👈 ajusta el namespace
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SimpleItemResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return array
-     */
     public function toArray($request): array
     {
         $price = $this->price;
+
         return [
             "id"               => $this->id,
             "name"             => $this->name,
@@ -45,17 +40,37 @@ class SimpleItemResource extends JsonResource
             "itemAttributes"   => ItemAttributeResource::collection($this->itemAttributeList($this->variations)),
             "extras"           => ItemExtraResource::collection($this->extras),
             "addons"           => ItemAddonResource::collection($this->addons),
-            "offer"            => SimpleOfferResource::collection(
+
+            // 👇 Solo aplica descuento porcentual si type === DISCOUNT;
+            // si es COMBO, usa el precio de combo directo de BD.
+            "offer" => SimpleOfferResource::collection(
                 $this->offer->filter(function ($offer) use ($price) {
-                    if (Carbon::now()->between($offer->start_date, $offer->end_date) && $offer->status === Status::ACTIVE) {
-                        $amount                = ($price - ($price / 100 * $offer->amount));
-                        $offer->flat_price     = AppLibrary::flatAmountFormat($amount);
-                        $offer->convert_price  = AppLibrary::convertAmountFormat($amount);
-                        $offer->currency_price = AppLibrary::currencyAmountFormat($amount);
-                        return $offer;
+                    $isActive = Carbon::now()->between($offer->start_date, $offer->end_date)
+                               && $offer->status === Status::ACTIVE;
+
+                    if (!$isActive) {
+                        return false;
                     }
+
+                    $final = $price;
+
+                    if ((int)$offer->type === OfferType::DISCOUNT) {
+                        // porcentaje: amount = 0..100
+                        $final = $price - ($price * ((float)$offer->amount / 100));
+                    } elseif ((int)$offer->type === OfferType::COMBO) {
+                        // combo: tomar precio de combo desde BD (sin fórmulas)
+                        // si no tienes columna combo_price y reutilizas amount, usa $offer->amount
+                        $final = $offer->combo_price ?? $offer->amount ?? $price;
+                    }
+
+                    // Inyecta precios formateados para este offer específico
+                    $offer->flat_price     = AppLibrary::flatAmountFormat($final);
+                    $offer->convert_price  = AppLibrary::convertAmountFormat($final);
+                    $offer->currency_price = AppLibrary::currencyAmountFormat($final);
+
+                    return true; // mantener el offer en la colección
                 })
-            )
+            ),
         ];
     }
 

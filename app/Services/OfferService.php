@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\PaginateRequest;
 use App\Libraries\QueryExceptionLibrary;
 use App\Http\Requests\ChangeImageRequest;
+use App\Enums\OfferType;
 
 class OfferService
 {
@@ -30,6 +31,40 @@ class OfferService
     protected $exceptFilter = [
         'excepts'
     ];
+
+    private static function normalizePercent($value): ?float
+    {
+        if ($value === null || $value === '') return null;
+        // quita % y espacios
+        $v = str_ireplace('%', '', (string)$value);
+        // quita separadores de miles
+        $v = str_replace([',', ' '], ['', ''], $v);
+        $num = (float)$v;
+        if ($num < 0)   $num = 0;
+        if ($num > 100) $num = 100;
+        return $num;
+    }
+
+    private static function normalizeMoney($value): ?float
+    {
+        if ($value === null || $value === '') return null;
+        $v = (string)$value;
+        // Quita símbolos comunes (Q, $, etc.) y espacios
+        $v = preg_replace('/[^\d\.\,\-]/', '', $v) ?: '0';
+        // Si tu local usa coma decimal, conviértela a punto
+        // Heurística: si hay tanto punto como coma, asumimos coma como miles -> quitamos comas
+        if (strpos($v, ',') !== false && strpos($v, '.') !== false) {
+            $v = str_replace(',', '', $v);
+        } else {
+            // si solo hay coma, úsala como decimal
+            if (strpos($v, ',') !== false && strpos($v, '.') === false) {
+                $v = str_replace(',', '.', $v);
+            }
+        }
+        // quita posibles separadores de miles restantes
+        $v = str_replace(',', '', $v);
+        return (float)$v;
+    }
 
     /**
      * @throws Exception
@@ -117,25 +152,49 @@ class OfferService
     {
         try {
             DB::transaction(function () use ($request) {
-                $this->offer = Offer::create([
+                $type = (int)$request->input('type');
+
+                // Construye payload base
+                $payload = [
                     'name'       => $request->name,
                     'slug'       => Str::slug($request->name),
-                    'amount'     => $request->amount,
+                    'type'       => $type, // 👈 incluir type
                     'start_date' => date('Y-m-d H:i:s', strtotime($request->start_date)),
                     'end_date'   => date('Y-m-d H:i:s', strtotime($request->end_date)),
                     'status'     => $request->status,
-                ]);
+                ];
+
+                if ($type === OfferType::DISCOUNT) {
+                    // Porcentaje 0..100 en amount; combo_price null
+                    $payload['amount'] = self::normalizePercent($request->input('amount'));
+                    $payload['combo_price'] = null;
+                } else { // OfferType::COMBO
+                    // Guarda combo_price como dinero; amount null
+                    // Si reutilizas "amount" como precio en el form, lo normalizamos igualmente:
+                    $combo = $request->filled('combo_price')
+                        ? $request->input('combo_price')
+                        : $request->input('amount');
+
+                    $payload['combo_price'] = self::normalizeMoney($combo);
+                    $payload['amount']      = null;
+                }
+
+                $this->offer = Offer::create($payload);
+
                 if ($request->image) {
                     $this->offer->addMedia($request->image)->toMediaCollection('offer');
                 }
             });
+
             return $this->offer;
+
         } catch (Exception $exception) {
             Log::info($exception->getMessage());
             DB::rollBack();
             throw new Exception(QueryExceptionLibrary::message($exception), 422);
         }
     }
+
 
     /**
      * @throws Exception
@@ -144,13 +203,27 @@ class OfferService
     {
         try {
             DB::transaction(function () use ($request, $offer) {
-                $this->offer       = $offer;
+                $type = (int)$request->input('type');
+
                 $offer->name       = $request->name;
                 $offer->slug       = Str::slug($request->name);
-                $offer->amount     = $request->amount;
+                $offer->type       = $type; // 👈 mantener type actualizado
                 $offer->start_date = date('Y-m-d H:i:s', strtotime($request->start_date));
                 $offer->end_date   = date('Y-m-d H:i:s', strtotime($request->end_date));
                 $offer->status     = $request->status;
+
+                if ($type === OfferType::DISCOUNT) {
+                    $offer->amount      = self::normalizePercent($request->input('amount'));
+                    $offer->combo_price = null;
+                } else { // COMBO
+                    $combo = $request->filled('combo_price')
+                        ? $request->input('combo_price')
+                        : $request->input('amount'); // por si el front reusa "amount" como precio
+
+                    $offer->combo_price = self::normalizeMoney($combo);
+                    $offer->amount      = null;
+                }
+
                 $offer->save();
             });
 
@@ -158,13 +231,16 @@ class OfferService
                 $this->offer->media()->delete();
                 $this->offer->addMedia($request->image)->toMediaCollection('offer');
             }
+
             return $this->offer;
+
         } catch (Exception $exception) {
             Log::info($exception->getMessage());
             DB::rollBack();
             throw new Exception(QueryExceptionLibrary::message($exception), 422);
         }
     }
+
 
     /**
      * @throws Exception
