@@ -24,7 +24,7 @@
 		</div>
 		<div class="row">
 			<div class="col-12 sm:col-6 xl:col-3">
-				<div class="p-4 rounded-lg flex items-center gap-4 bg-[#1C346C]">
+				<div class="p-4 rounded-lg flex items-center gap-4 bg-[#e30613]">
 					<div
 						class="w-12 h-12 rounded-full flex items-center justify-center bg-white"
 					>
