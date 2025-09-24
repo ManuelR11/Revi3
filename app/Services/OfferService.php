@@ -172,9 +172,7 @@ class OfferService
                     // Porcentaje 0..100 en amount; combo_price null
                     $payload['amount']      = self::normalizePercent($request->input('amount'));
                     $payload['combo_price'] = null;
-                } else { // OfferType::COMBO
-                    // Guarda combo_price como dinero; amount null
-                    // Si reutilizas "amount" como precio en el form, lo normalizamos igualmente:
+                } else {
                     $comboPrice = $request->filled('combo_price')
                         ? $request->input('combo_price')
                         : $request->input('amount');
@@ -364,10 +362,26 @@ class OfferService
 
     private function comboCategory(): ItemCategory
     {
-        return ItemCategory::firstOrCreate(
+        $category = ItemCategory::firstOrCreate(
             ['slug' => 'combo-items'],
             ['name' => 'Combos', 'status' => Status::ACTIVE]
         );
+
+        $updates = [];
+
+        if ($category->status !== Status::ACTIVE) {
+            $updates['status'] = Status::ACTIVE;
+        }
+
+        if ($category->name !== 'Combos') {
+            $updates['name'] = 'Combos';
+        }
+
+        if (!empty($updates)) {
+            $category->fill($updates)->save();
+        }
+
+        return $category;
     }
 
     private function generateComboSlug(string $name, ?int $ignoreId = null): string

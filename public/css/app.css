@@ -3690,6 +3690,9 @@ input:checked + div svg {
 .flex-shrink-0 {
   flex-shrink: 0;
 }
+.shrink-0 {
+  flex-shrink: 0;
+}
 .flex-grow {
   flex-grow: 1;
 }
@@ -3729,6 +3732,9 @@ input:checked + div svg {
 }
 .resize-none {
   resize: none;
+}
+.list-disc {
+  list-style-type: disc;
 }
 .appearance-none {
   -webkit-appearance: none;
@@ -3835,6 +3841,11 @@ input:checked + div svg {
 }
 .gap-y-5 {
   row-gap: 1.25rem;
+}
+.space-y-1 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
 }
 .overflow-auto {
   overflow: auto;
@@ -4398,6 +4409,9 @@ input:checked + div svg {
 .pt-8 {
   padding-top: 2rem;
 }
+.pl-6 {
+  padding-left: 1.5rem;
+}
 .text-left {
   text-align: left;
 }
@@ -4469,6 +4483,12 @@ input:checked + div svg {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+.text-\[0\.95rem\] {
+  font-size: 0.95rem;
+}
+.text-\[1rem\] {
+  font-size: 1rem;
 }
 .font-\[300\] {
   font-weight: 300;
@@ -4547,6 +4567,9 @@ input:checked + div svg {
 }
 .leading-none {
   line-height: 1;
+}
+.leading-tight {
+  line-height: 1.25;
 }
 .tracking-wide {
   letter-spacing: 0.025em;
@@ -4670,6 +4693,10 @@ input:checked + div svg {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+.text-gray-900 {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity, 1));
 }
 .accent-primary {
   accent-color: rgb(2252 77 37 / 1);
@@ -5221,6 +5248,12 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 .first-letter\:capitalize::first-letter {
   text-transform: capitalize;
 }
+.marker\:text-gray-300 *::marker {
+  color: rgb(209 213 219 );
+}
+.marker\:text-gray-300::marker {
+  color: rgb(209 213 219 );
+}
 .placeholder\:font-public::-moz-placeholder {
   font-family: 'Public Sans', sans-serif;
 }
@@ -5731,6 +5764,16 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 
   .md\:pl-8 {
     padding-left: 2rem;
+  }
+
+  .md\:text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+
+  .md\:text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
   }
 }
 @media (min-width: 1024px) {

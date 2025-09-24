@@ -20,7 +20,6 @@ class ItemAddonResource extends JsonResource
         $basePrice = $this?->addonItem?->price ?? 0.0;
 
         $addonItemId = optional($this->addonItem)->id;
-
         $offers = $this->collectAddonOffers()
             ->filter(function ($offer) {
                 return Carbon::now()->between($offer->start_date, $offer->end_date)
@@ -30,7 +29,6 @@ class ItemAddonResource extends JsonResource
                 $isDiscount = (int) $offer->type === OfferType::DISCOUNT;
                 $isComboForAddon = (int) $offer->type === OfferType::COMBO
                     && (int) $offer->combo_item_id === (int) $addonItemId;
-
                 if (!$isDiscount && !$isComboForAddon) {
                     return null;
                 }

@@ -41,32 +41,33 @@ class KitchenDisplaySystemOrderService
             $orderColumn = $request->get('order_column') ?? 'id';
             $orderType   = $request->get('order_by') ?? 'desc';
 
-            return Order::with('orderItems')->whereIn('status', [OrderStatus::ACCEPT, OrderStatus::PREPARING, OrderStatus::PREPARED])->where(function ($query) {
-                $query->where(function ($subQuery) {
-                    $subQuery->whereDate('order_datetime', Carbon::today())->where('is_advance_order', Ask::NO);
-                })->orWhere(function ($subQuery) {
-                    $subQuery->where('is_advance_order', Ask::YES)->whereDate('order_datetime',  Carbon::yesterday());
-                });
-            })->where(function ($query) use ($requests) {
-                foreach ($requests as $key => $request) {
-                    if (in_array($key, $this->orderFilter)) {
-                        if ($key === "status" && $request) {
-                            $query->where($key, (int)$request);
-                        } else {
-                            $query->where($key, 'like', '%' . $request . '%');
+             return Order::with(['orderItems.orderItem.comboOffer.offerItems.item'])
+                ->whereIn('status', [OrderStatus::ACCEPT, OrderStatus::PREPARING, OrderStatus::PREPARED])
+                ->where(function ($query) {
+                    $query->where(function ($subQuery) {
+                        $subQuery->whereDate('order_datetime', Carbon::today())->where('is_advance_order', Ask::NO);
+                    })->orWhere(function ($subQuery) {
+                        $subQuery->where('is_advance_order', Ask::YES)->whereDate('order_datetime', Carbon::yesterday());
+                    });
+                })->where(function ($query) use ($requests) {
+                    foreach ($requests as $key => $request) {
+                        if (in_array($key, $this->orderFilter)) {
+                            if ($key === "status" && $request) {
+                                $query->where($key, (int) $request);
+                            } else {
+                                $query->where($key, 'like', '%' . $request . '%');
+                            }
                         }
-                    }
-
-                    if (in_array($key, $this->exceptFilter)) {
-                        $explodes = explode('|', $request);
-                        if (is_array($explodes)) {
-                            foreach ($explodes as $explode) {
-                                $query->where('order_type', '!=', $explode);
+                        if (in_array($key, $this->exceptFilter)) {
+                            $explodes = explode('|', $request);
+                            if (is_array($explodes)) {
+                                foreach ($explodes as $explode) {
+                                    $query->where('order_type', '!=', $explode);
+                                }
                             }
                         }
                     }
-                }
-            })->orderBy($orderColumn, $orderType)->get();
+                    })->orderBy($orderColumn, $orderType)->get();
         } catch (Exception $exception) {
             Log::info($exception->getMessage());
             throw new Exception(QueryExceptionLibrary::message($exception), 422);
@@ -93,13 +94,15 @@ class KitchenDisplaySystemOrderService
     public function OrderItems()
     {
         try {
-            $orders = Order::with('orderItems')->where('status', OrderStatus::PREPARING)->where(function ($query) {
-                $query->where(function ($subQuery) {
-                    $subQuery->whereDate('order_datetime', Carbon::today())->where('is_advance_order', Ask::NO);
-                })->orWhere(function ($subQuery) {
-                    $subQuery->where('is_advance_order', Ask::YES)->whereDate('order_datetime',  Carbon::yesterday());
-                });
-            })->get();
+            $orders = Order::with(['orderItems.orderItem.comboOffer.offerItems.item'])
+                ->where('status', OrderStatus::PREPARING)
+                ->where(function ($query) {
+                    $query->where(function ($subQuery) {
+                        $subQuery->whereDate('order_datetime', Carbon::today())->where('is_advance_order', Ask::NO);
+                    })->orWhere(function ($subQuery) {
+                        $subQuery->where('is_advance_order', Ask::YES)->whereDate('order_datetime', Carbon::yesterday());
+                    });
+                })->get();
 
             $allItems = $orders->pluck('orderItems')->flatten();
             $mergedItems = $allItems->groupBy(function ($item) {

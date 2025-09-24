@@ -19,8 +19,8 @@ class KDSOrderItemsResource extends JsonResource
             'item_id'         => $this->item_id,
             'item_name'       => $this->orderItem?->name,
             'quantity'        => $this->quantity,
-            'item_variations' => json_decode($this->item_variations),
-            'item_extras'     => json_decode($this->item_extras),
+            'item_variations' => json_decode($this->item_variations, true) ?? [],
+            'item_extras'     => json_decode($this->item_extras, true) ?? [],
             'instruction'     => $this->instruction,
             'combo_items'     => $this->comboItems(),
         ];
