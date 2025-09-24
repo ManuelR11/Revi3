@@ -13,6 +13,10 @@ export const offerItem = {
             temp_id: null,
             isEditing: false,
         },
+        form: {
+            item_id: null,
+            quantity: 1,
+        },
     },
     getters: {
         lists: function (state) {
@@ -30,7 +34,8 @@ export const offerItem = {
         },
         temp: function (state) {
             return state.temp;
-        }
+        },
+        form: (state) => state.form, // 👈 nuevo
     },
     actions: {
         lists: function (context, payload) {
@@ -56,17 +61,41 @@ export const offerItem = {
             return new Promise((resolve, reject) => {
                 let method = axios.post;
                 let url = `/admin/offer/item/${payload.id}`;
-                if (this.state['offerItem'].temp.isEditing) {
+                if (context.state.temp.isEditing) {
                     method = axios.put;
-                    url = `/admin/offer/item/${payload.id}/${this.state['offerItem'].temp.temp_id}`;
+                    url = `/admin/offer/item/${payload.id}/${context.state.temp.temp_id}`;
                 }
-                method(url, payload.form).then(res => {
-                    context.dispatch('lists', payload.search).then().catch();
+
+                let fd;
+                if (payload.form instanceof FormData) {
+                    fd = payload.form;
+                } else {
+                    fd = new FormData();
+                    if (payload.form && typeof payload.form === 'object') {
+                        if (payload.form.item_id != null) fd.append('item_id', payload.form.item_id);
+                        if (payload.form.quantity != null) fd.append('quantity', payload.form.quantity);
+                    } else {
+                        // fallback: toma del store.form
+                        if (context.state.form.item_id != null) fd.append('item_id', context.state.form.item_id);
+                        if (context.state.form.quantity != null) fd.append('quantity', context.state.form.quantity);
+                    }
+                }
+
+                // Por si viniera incompleto, asegura que ambos estén
+                if (!fd.has('item_id') && context.state.form.item_id != null) {
+                    fd.append('item_id', context.state.form.item_id);
+                }
+                if (!fd.has('quantity') && context.state.form.quantity != null) {
+                    fd.append('quantity', context.state.form.quantity);
+                }
+
+                method(url, fd)
+                    .then(res => {
+                    context.dispatch('lists', payload.search).catch(() => {});
                     context.commit('reset');
                     resolve(res);
-                }).catch((err) => {
-                    reject(err);
-                });
+                    })
+                    .catch(reject);
             });
         },
         edit: function (context, payload) {
@@ -109,9 +138,17 @@ export const offerItem = {
             state.temp.temp_id = payload;
             state.temp.isEditing = true;
         },
-        reset: function (state) {
+        setForm(state, payload) {        // 👈 nuevo
+            // payload puede ser { item_id, quantity }
+            state.form.item_id = payload?.item_id ?? state.form.item_id;
+            state.form.quantity = payload?.quantity ?? state.form.quantity;
+        },
+        reset(state) {
             state.temp.temp_id = null;
             state.temp.isEditing = false;
-        }
+            // limpia también el form
+            state.form.item_id = null;     // 👈 nuevo
+            state.form.quantity = 1;       // 👈 nuevo
+        },
     },
 }

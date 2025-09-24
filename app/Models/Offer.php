@@ -23,7 +23,7 @@ class Offer extends Model implements HasMedia
         'start_date' => 'datetime',
         'end_date'   => 'datetime',
         'type'       => 'integer',
-        'combo_price'=> 'decimal'
+        'combo_price'=> 'decimal:2'
     ];
 
     public function items(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

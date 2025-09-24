@@ -32,6 +32,24 @@
                             <small class="db-field-alert" v-if="errors.item_id">
                                 {{ errors.item_id[0] }}
                             </small>
+                            <div class="form-col-12 sm:form-col-6">
+                                <label for="quantity" class="db-field-title required">
+                                    {{ $t("label.quantity") }}
+                                </label>
+                                <input
+                                    id="quantity"
+                                    type="number"
+                                    min="1"
+                                    step="1"
+                                    v-model.number="props.form.quantity"
+                                    :class="errors.quantity ? 'invalid' : ''"
+                                    class="db-field-control"
+                                    @keypress="numberOnly($event)"
+                                />
+                                <small class="db-field-alert" v-if="errors.quantity">
+                                    {{ errors.quantity[0] }}
+                                </small>
+                            </div>
                         </div>
 
                         <div class="form-col-12">
@@ -99,56 +117,63 @@ export default {
         this.loading.isActive = false;
     },
     methods: {
-        add: function () {
+        add() {
             appService.modalShow();
         },
-        numberOnly: function (e) {
+        numberOnly(e) {
             return appService.floatNumber(e);
         },
-        reset: function () {
+        reset() {
             appService.modalHide();
             this.$store.dispatch("offerItem/reset").then().catch();
             this.errors = {};
             this.$props.props.form = {
                 item_id: null,
+                quantity: 1, // 👈 por defecto
             };
             this.message = null;
         },
-        save: function () {
+        save() {
             try {
                 const tempId = this.$store.getters["offerItem/temp"].temp_id;
                 this.loading.isActive = true;
-                this.$store.dispatch("offerItem/save", this.props).then((res) => {
-                    appService.modalHide();
-                    this.loading.isActive = false;
-                    alertService.successFlip(
-                        tempId === null ? 0 : 1,
-                        this.$t("label.item")
-                    );
-                    this.props.form = {
-                        item_id: null,
-                    };
-                    this.errors = {};
-                    this.message = null;
-                }).catch((err) => {
-                    this.loading.isActive = false;
-                    if (err.response.data.errors === undefined) {
-                        if (err.response.data.message) {
-                            this.errors = {};
-                            this.message = err.response.data.message;
+
+                // Enviamos lo que ya tengas en props (el store ahora toma item_id + quantity)
+                this.$store.dispatch("offerItem/save", this.props)
+                    .then(() => {
+                        appService.modalHide();
+                        this.loading.isActive = false;
+                        alertService.successFlip(
+                            tempId === null ? 0 : 1,
+                            this.$t("label.item")
+                        );
+                        // Reset del form del modal
+                        this.props.form = {
+                            item_id: null,
+                            quantity: 1, // 👈 reset
+                        };
+                        this.errors = {};
+                        this.message = null;
+                    })
+                    .catch((err) => {
+                        this.loading.isActive = false;
+                        if (err.response?.data?.errors === undefined) {
+                            if (err.response?.data?.message) {
+                                this.errors = {};
+                                this.message = err.response.data.message;
+                            } else {
+                                this.message = null;
+                            }
                         } else {
                             this.message = null;
+                            this.errors = err.response.data.errors; // 👈 mostrará quantity si falla
                         }
-                    } else {
-                        this.message = null;
-                        this.errors = err.response.data.errors;
-                    }
-                });
+                    });
             } catch (err) {
-                this.loading.isActive = false;
-                alertService.error(err);
+            this.loading.isActive = false;
+            alertService.error(err);
             }
         },
-    }
+        }
 };
 </script>

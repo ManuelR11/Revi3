@@ -29,7 +29,12 @@ class OfferItemRequest extends FormRequest
             'item_id'   => [
                 'required',
                 'numeric',
-                
+                'exists:items,id',
+            ],
+            'quantity' => [
+                'required',
+                'integer',
+                'min:1', // 👈 no permite cantidades 0 o negativas
             ],
         ];
     }
@@ -37,7 +42,11 @@ class OfferItemRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'item_id.required' => 'The item field is required.'
+            'item_id.required' => 'The item field is required.',
+            'item_id.exists'   => 'The selected item does not exist.',
+            'quantity.required' => 'The quantity field is required.',
+            'quantity.integer'  => 'The quantity must be an integer.',
+            'quantity.min'      => 'The quantity must be at least 1.',
         ];
     }
 }

@@ -22,6 +22,7 @@ class OfferItemResource extends JsonResource
             'id'                        => $this->id,
             'offer_id'                  => $this->offer_id,
             'offer_item_id'             => $this->item_id,
+            'quantity'                  => $this->quantity, 
             'offer_name'                => optional($this->offer)->name,
             'offer_item_name'           => optional($this->item)->name,
             'offer_item_price'          => optional($this->item)->price,

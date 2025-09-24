@@ -1,44 +1,55 @@
 <template>
-    <OfferItemCreateComponent :props="offerProps" />
-    <br><br>
-    <div class="db-card" v-if="offerItems.length > 0">
-        <div class="db-table-responsive">
-            <table class="db-table stripe">
-                <thead class="db-table-head">
-                    <tr class="db-table-head-tr">
-                        <th class="db-table-head-th">{{ $t("label.name") }}</th>
-                        <th class="db-table-head-th">{{ $t("label.price") }}</th>
-                        <th class="db-table-head-th">{{ $t("label.status") }}</th>
-                        <th class="db-table-head-th">{{ $t("label.action") }}</th>
-                    </tr>
-                </thead>
-                <tbody class="db-table-body" v-if="offerItems.length > 0">
-                    <tr class="db-table-body-tr" v-for="offerItem in offerItems" :key="offerItem">
-                        <td class="db-table-body-td">
-                            {{ offerItem.offer_item_name }}
-                        </td>
-                        <td class="db-table-body-td">
-                            {{ offerItem.offer_item_flat_price }}
-                        </td>
-                        <td class="db-table-body-td">
-                            <span :class="statusClass(offerItem.offer_item_status)">
-                                {{ enums.statusEnumArray[offerItem.offer_item_status] }}
-                            </span>
-                        </td>
-                        <td class="db-table-body-td">
-                            <SmIconDeleteComponent @click="destroy(offerItem.id)" />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <OfferItemCreateComponent :props="offerProps" />
+  <br><br>
+
+  <!-- Total de unidades del combo (opcional) -->
+  <div class="mb-2" v-if="offerItems.length">
+    <strong>{{ $t('label.total') }}:</strong> {{ totalUnits }}
+  </div>
+
+  <div class="db-card" v-if="offerItems.length > 0">
+    <div class="db-table-responsive">
+      <table class="db-table stripe">
+        <thead class="db-table-head">
+          <tr class="db-table-head-tr">
+            <th class="db-table-head-th">{{ $t("label.name") }}</th>
+            <th class="db-table-head-th">{{ $t("label.price") }}</th>
+            <th class="db-table-head-th">{{ $t("label.quantity") }}</th> <!-- 👈 NUEVA COLUMNA -->
+            <th class="db-table-head-th">{{ $t("label.status") }}</th>
+            <th class="db-table-head-th">{{ $t("label.action") }}</th>
+          </tr>
+        </thead>
+        <tbody class="db-table-body">
+          <tr class="db-table-body-tr" v-for="offerItem in offerItems" :key="offerItem.id">
+            <td class="db-table-body-td">
+              {{ offerItem.offer_item_name }}
+            </td>
+            <td class="db-table-body-td">
+              {{ offerItem.offer_item_flat_price }}
+            </td>
+            <td class="db-table-body-td">
+              {{ offerItem.quantity ?? 1 }} <!-- 👈 MUESTRA CANTIDAD -->
+            </td>
+            <td class="db-table-body-td">
+              <span :class="statusClass(offerItem.offer_item_status)">
+                {{ enums.statusEnumArray[offerItem.offer_item_status] }}
+              </span>
+            </td>
+            <td class="db-table-body-td">
+              <SmIconDeleteComponent @click="destroy(offerItem.id)" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="p-4 text-center" v-else>
-        <div class="max-w-[300px] mx-auto mt-2">
-            <img class="w-full h-full" :src="ENV.API_URL + '/images/default/not-found.png'" alt="Not Found">
-        </div>
-        <span class="d-block mt-3 text-lg">{{ $t('message.no_data_available') }}</span>
+  </div>
+
+  <div class="p-4 text-center" v-else>
+    <div class="max-w-[300px] mx-auto mt-2">
+      <img class="w-full h-full" :src="ENV.API_URL + '/images/default/not-found.png'" alt="Not Found">
     </div>
+    <span class="d-block mt-3 text-lg">{{ $t('message.no_data_available') }}</span>
+  </div>
 </template>
 
 <script>
@@ -52,79 +63,72 @@ import OfferItemCreateComponent from "./OfferItemCreateComponent";
 import ENV from "../../../../config/env";
 
 export default {
-    name: "OfferItemListComponent",
-    components: {
-        OfferItemCreateComponent, SmSidebarModalCreateComponent, SmIconModalEditComponent, SmIconDeleteComponent
-    },
-    props: {
-        offer: { type: Number },
-    },
-    data() {
-        return {
-            loading: {
-                isActive: false
-            },
-            enums: {
-                statusEnum: statusEnum,
-                statusEnumArray: {
-                    [statusEnum.ACTIVE]: this.$t("label.active"),
-                    [statusEnum.INACTIVE]: this.$t("label.inactive"),
-                },
-            },
-            offerProps: {
-                id: this.offer,
-                form: {
-                    item_id: null,
-                },
-                search: {
-                    id: this.offer,
-                    paginate: 0,
-                    order_column: 'id',
-                    order_type: 'desc',
-                }
-            },
-            ENV: ENV
-        }
-    },
-    mounted() {
-        this.list();
-    },
-    computed: {
-        offerItems: function () {
-            return this.$store.getters['offerItem/lists'];
-        }
-    },
-    methods: {
-        statusClass: function (status) {
-            return appService.statusClass(status);
+  name: "OfferItemListComponent",
+  components: {
+    OfferItemCreateComponent, SmSidebarModalCreateComponent, SmIconModalEditComponent, SmIconDeleteComponent
+  },
+  props: { offer: { type: Number } },
+  data() {
+    return {
+      loading: { isActive: false },
+      enums: {
+        statusEnum,
+        statusEnumArray: {
+          [statusEnum.ACTIVE]: this.$t("label.active"),
+          [statusEnum.INACTIVE]: this.$t("label.inactive"),
         },
-        list: function () {
-            this.loading.isActive = true;
-            this.$store.dispatch("offerItem/lists", this.offerProps.search).then((res) => {
-                this.loading.isActive = false;
-            }).catch((err) => {
-                this.loading.isActive = false;
-            });
+      },
+      offerProps: {
+        id: this.offer,
+        form: {
+          item_id: null,
+          quantity: 1, // 👈 default para el modal
         },
-        destroy: function (id) {
-            appService.destroyConfirmation().then((res) => {
-                try {
-                    this.loading.isActive = true;
-                    this.$store.dispatch('offerItem/destroy', { offer: this.offer, id: id, search: this.offerProps.search }).then((res) => {
-                        this.loading.isActive = false;
-                        alertService.successFlip(null, this.$t('label.item'));
-                    }).catch((err) => {
-                        this.loading.isActive = false;
-                        alertService.error(err.response.data.message);
-                    })
-                } catch (err) {
-                    this.loading.isActive = false;
-                    alertService.error(err.response.data.message);
-                }
-            }).catch((err) => {
-                this.loading.isActive = false;
-            });
+        search: {
+          id: this.offer,
+          paginate: 0,
+          order_column: 'id',
+          order_type: 'desc',
         }
+      },
+      ENV
     }
+  },
+  mounted() {
+    this.list();
+  },
+  computed: {
+    offerItems() {
+      return this.$store.getters['offerItem/lists'];
+    },
+    // 👇 Suma de cantidades (opcional para mostrar total)
+    totalUnits() {
+      return this.offerItems.reduce((acc, oi) => acc + (Number(oi.quantity ?? 1)), 0);
+    }
+  },
+  methods: {
+    statusClass(status) {
+      return appService.statusClass(status);
+    },
+    list() {
+      this.loading.isActive = true;
+      this.$store.dispatch("offerItem/lists", this.offerProps.search)
+        .finally(() => { this.loading.isActive = false; });
+    },
+    destroy(id) {
+      appService.destroyConfirmation().then(() => {
+        this.loading.isActive = true;
+        this.$store.dispatch('offerItem/destroy', { offer: this.offer, id, search: this.offerProps.search })
+          .then(() => {
+            this.loading.isActive = false;
+            alertService.successFlip(null, this.$t('label.item'));
+          })
+          .catch((err) => {
+            this.loading.isActive = false;
+            alertService.error(err.response.data.message);
+          });
+      });
+    }
+  }
 }
 </script>

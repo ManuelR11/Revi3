@@ -9,11 +9,12 @@ class OfferItem extends Model
 {
     use HasFactory;
     protected $table = "offer_items";
-    protected $fillable = ['offer_id', 'item_id'];
+    protected $fillable = ['offer_id', 'item_id', 'quantity'];
     protected $casts = [
         'id'       => 'integer',
         'offer_id' => 'integer',
         'item_id'  => 'integer',
+        'quiantity'=> 'integer'
     ];
 
     public function offer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
