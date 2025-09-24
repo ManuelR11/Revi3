@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Item extends Model implements HasMedia
@@ -112,5 +113,9 @@ class Item extends Model implements HasMedia
     public function offer(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Offer::class, 'offer_items');
+    }
+    public function comboOffer(): HasOne
+    {
+        return $this->hasOne(Offer::class, 'combo_item_id');
     }
 }

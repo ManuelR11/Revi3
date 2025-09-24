@@ -5,8 +5,13 @@ namespace App\Services;
 
 use Exception;
 use Carbon\Carbon;
+use App\Enums\Ask;
 use App\Enums\Status;
+use App\Enums\OfferType;
+use App\Enums\ItemType;
+use App\Models\Item;
 use App\Models\Offer;
+use App\Models\ItemCategory;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +20,6 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\PaginateRequest;
 use App\Libraries\QueryExceptionLibrary;
 use App\Http\Requests\ChangeImageRequest;
-use App\Enums\OfferType;
 
 class OfferService
 {
@@ -158,7 +162,7 @@ class OfferService
                 $payload = [
                     'name'       => $request->name,
                     'slug'       => Str::slug($request->name),
-                    'type'       => $type, // 👈 incluir type
+                    'type'       => $type,
                     'start_date' => date('Y-m-d H:i:s', strtotime($request->start_date)),
                     'end_date'   => date('Y-m-d H:i:s', strtotime($request->end_date)),
                     'status'     => $request->status,
@@ -166,24 +170,27 @@ class OfferService
 
                 if ($type === OfferType::DISCOUNT) {
                     // Porcentaje 0..100 en amount; combo_price null
-                    $payload['amount'] = self::normalizePercent($request->input('amount'));
+                    $payload['amount']      = self::normalizePercent($request->input('amount'));
                     $payload['combo_price'] = null;
                 } else { // OfferType::COMBO
                     // Guarda combo_price como dinero; amount null
                     // Si reutilizas "amount" como precio en el form, lo normalizamos igualmente:
-                    $combo = $request->filled('combo_price')
+                    $comboPrice = $request->filled('combo_price')
                         ? $request->input('combo_price')
                         : $request->input('amount');
 
-                    $payload['combo_price'] = self::normalizeMoney($combo);
+                    $payload['combo_price'] = self::normalizeMoney($comboPrice);
                     $payload['amount']      = null;
                 }
 
-                $this->offer = Offer::create($payload);
+                $offer = Offer::create($payload);
 
                 if ($request->image) {
-                    $this->offer->addMedia($request->image)->toMediaCollection('offer');
+                    $offer->clearMediaCollection('offer');
+                    $offer->addMedia($request->image)->toMediaCollection('offer');
                 }
+                $this->syncComboItem($offer);
+                $this->offer = $offer->fresh(['comboItem']);
             });
 
             return $this->offer;
@@ -207,7 +214,7 @@ class OfferService
 
                 $offer->name       = $request->name;
                 $offer->slug       = Str::slug($request->name);
-                $offer->type       = $type; // 👈 mantener type actualizado
+                $offer->type       = $type;
                 $offer->start_date = date('Y-m-d H:i:s', strtotime($request->start_date));
                 $offer->end_date   = date('Y-m-d H:i:s', strtotime($request->end_date));
                 $offer->status     = $request->status;
@@ -216,21 +223,24 @@ class OfferService
                     $offer->amount      = self::normalizePercent($request->input('amount'));
                     $offer->combo_price = null;
                 } else { // COMBO
-                    $combo = $request->filled('combo_price')
+                    $comboPrice = $request->filled('combo_price')
                         ? $request->input('combo_price')
                         : $request->input('amount'); // por si el front reusa "amount" como precio
 
-                    $offer->combo_price = self::normalizeMoney($combo);
+                    $offer->combo_price = self::normalizeMoney($comboPrice);
                     $offer->amount      = null;
                 }
 
                 $offer->save();
-            });
+                
+                if ($request->image) {
+                    $offer->clearMediaCollection('offer');
+                    $offer->addMedia($request->image)->toMediaCollection('offer');
+                }
 
-            if ($request->image) {
-                $this->offer->media()->delete();
-                $this->offer->addMedia($request->image)->toMediaCollection('offer');
-            }
+                $this->syncComboItem($offer);
+                $this->offer = $offer->fresh(['comboItem']);
+            });
 
             return $this->offer;
 
@@ -248,6 +258,9 @@ class OfferService
     public function destroy(Offer $offer)
     {
         try {
+            if ($offer->comboItem) {
+                $offer->comboItem->delete();
+            }
             $offer->offerItems()->delete();
             $offer->delete();
         } catch (Exception $exception) {
@@ -301,5 +314,141 @@ class OfferService
             Log::info($exception->getMessage());
             throw new Exception(QueryExceptionLibrary::message($exception), 422);
         }
+    }
+    protected function syncComboItem(Offer $offer): void
+    {
+        if ((int)$offer->type !== OfferType::COMBO) {
+            if ($offer->comboItem) {
+                $offer->comboItem->delete();
+            }
+
+            if ($offer->combo_item_id !== null) {
+                $offer->combo_item_id = null;
+                $offer->save();
+            }
+
+            return;
+        }
+
+        $category = $this->comboCategory();
+        $existingId = $offer->comboItem?->id;
+
+        $item = $offer->comboItem ?? new Item();
+
+        $item->fill([
+            'item_category_id' => $category->id,
+            'name'             => $offer->name,
+            'slug'             => $this->generateComboSlug($offer->name, $existingId),
+            'tax_id'           => null,
+            'item_type'        => $item->item_type ?? ItemType::VEG,
+            'price'            => $offer->combo_price ?? 0,
+            'is_featured'      => Ask::NO,
+            'description'      => self::buildComboDescription($offer),
+            'caution'          => null,
+            'status'           => $offer->status,
+            'order'            => $item->order ?? 1,
+        ]);
+
+        $item->save();
+
+        if ($offer->combo_item_id !== $item->id) {
+            $offer->combo_item_id = $item->id;
+            $offer->save();
+        }
+
+        $offerWithMedia = $offer->fresh('media');
+        $this->syncComboMedia($offerWithMedia, $item);
+
+        self::updateComboItemDescription($offer->fresh(['offerItems.item', 'comboItem']));
+    }
+
+    private function comboCategory(): ItemCategory
+    {
+        return ItemCategory::firstOrCreate(
+            ['slug' => 'combo-items'],
+            ['name' => 'Combos', 'status' => Status::ACTIVE]
+        );
+    }
+
+    private function generateComboSlug(string $name, ?int $ignoreId = null): string
+    {
+        $base = Str::slug(trim($name) === '' ? 'combo-offer' : $name . ' combo');
+        if ($base === '') {
+            $base = 'combo-offer';
+        }
+
+        $slug = $base;
+        $counter = 1;
+
+        while (
+            Item::where('slug', $slug)
+                ->when($ignoreId, function ($query) use ($ignoreId) {
+                    $query->where('id', '!=', $ignoreId);
+                })
+                ->exists()
+        ) {
+            $slug = $base . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+    private function syncComboMedia(Offer $offer, Item $item): void
+    {
+        $media = $offer->getFirstMedia('offer');
+        if (!$media) {
+            return;
+        }
+
+        $path = $media->getPath();
+        if (!$path || !is_file($path)) {
+            return;
+        }
+
+        $item->clearMediaCollection('item');
+        $item->addMedia($path)->preservingOriginal()->toMediaCollection('item');
+    }
+
+    private static function buildComboDescription(Offer $offer): ?string
+    {
+        $offer->loadMissing('offerItems.item');
+
+        $parts = $offer->offerItems
+            ->map(function ($offerItem) {
+                if (!$offerItem->item) {
+                    return null;
+                }
+
+                $quantity = max(1, (int) $offerItem->quantity);
+                $name = $offerItem->item->name;
+
+                return $quantity > 1 ? $quantity . ' × ' . $name : $name;
+            })
+            ->filter()
+            ->values();
+
+        if ($parts->isEmpty()) {
+            return null;
+        }
+
+        return $parts->implode(', ');
+    }
+
+    public static function updateComboItemDescription(Offer $offer): void
+    {
+        if (!$offer->combo_item_id) {
+            return;
+        }
+
+        $offer->loadMissing('comboItem');
+
+        if (!$offer->comboItem) {
+            return;
+        }
+
+        $description = self::buildComboDescription($offer);
+        $offer->comboItem->description = $description;
+        $offer->comboItem->save();
     }
 }

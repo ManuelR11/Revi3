@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Offer extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
 
     protected $table = "offers";
-    protected $fillable = ['name', 'slug', 'amount', 'status', 'start_date', 'end_date', 'type', 'combo_price'];
+    protected $fillable = ['name', 'slug', 'amount', 'status', 'start_date', 'end_date', 'type', 'combo_price', 'combo_item_id'];
     protected $casts = [
         'id'         => 'integer',
         'name'       => 'string',
@@ -23,7 +24,8 @@ class Offer extends Model implements HasMedia
         'start_date' => 'datetime',
         'end_date'   => 'datetime',
         'type'       => 'integer',
-        'combo_price'=> 'decimal:2'
+        'combo_price'=> 'decimal:2',
+        'combo_item_id' => 'integer',
     ];
 
     public function items(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -34,6 +36,11 @@ class Offer extends Model implements HasMedia
     public function offerItems(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(OfferItem::class, 'offer_id', 'id');
+    }
+
+    public function comboItem(): BelongsTo
+    {
+        return $this->belongsTo(Item::class, 'combo_item_id');
     }
 
     public function getCoverAttribute(): string
