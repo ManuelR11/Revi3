@@ -252,28 +252,6 @@
 			</div>
 		</div>
 	</section>
-	<!-- Botón flotante en la esquina inferior derecha -->
-	<button
-		class="fixed bottom-6 right-6 z-50 bg-primary text-white rounded-full shadow-lg px-5 py-3 text-lg"
-		@click="showScreensaver = true"
-		style="transition: box-shadow 0.2s"
-	>
-		Salva Pantalla
-	</button>
-
-	<!-- Salva pantalla cubriendo todo -->
-	<div
-		v-if="showScreensaver"
-		@click="showScreensaver = false"
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 cursor-pointer"
-		style="animation: fadeIn 0.3s"
-	>
-		<img
-			src="/images/theme/pollo.jpg"
-			alt="Screensaver"
-			class="max-w-full max-h-full"
-		/>
-	</div>
 </template>
 
 <script>
@@ -295,7 +273,6 @@ export default {
 			loading: {
 				isActive: false,
 			},
-			showScreensaver: false,
 			enums: {
 				activityEnum: activityEnum,
 				orderStatusEnum: orderStatusEnum,
