@@ -39,6 +39,17 @@ class MenuTableSeeder extends Seeder
 
             ],
             [
+                'name'       => 'Complementos',
+                'language'   => 'complementos',
+                'url'        => 'complementos',
+                'icon'       => 'lab lab-addons',
+                'priority'   => 100,
+                'status'     => 1,
+                'created_at' => now(),
+                'updated_at' => now()
+
+            ],
+            [
                 'name'       => 'Dining Tables',
                 'language'   => 'dining_tables',
                 'url'        => 'dining-tables',

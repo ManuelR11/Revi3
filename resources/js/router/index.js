@@ -9,6 +9,7 @@ import authRoutes from "./modules/authRoutes";
 import settingRoutes from "./modules/settingRoutes";
 import offerRoutes from "./modules/offerRoutes";
 import itemRoutes from "./modules/itemRoutes";
+import complementosRoutes from "./modules/complementosRoutes";
 import customerRoutes from "./modules/customerRoutes";
 import administratorRoutes from "./modules/administratorRoutes";
 import employeeRoutes from "./modules/employeeRoutes";
@@ -65,6 +66,7 @@ export const routes = baseRoutes.concat(
     settingRoutes,
     offerRoutes,
     itemRoutes,
+    complementosRoutes,
     customerRoutes,
     administratorRoutes,
     employeeRoutes,

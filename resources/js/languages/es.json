@@ -39,6 +39,8 @@
 		"variations": "Variaciones",
 		"extras": "Extras",
 		"addons": "Complementos",
+		"complementos": "Complementos",
+		"complements": "Complementos",
 		"languages": "Idiomas",
 		"overview": "Resumen",
 		"order_statistics": "Estadísticas de Pedidos",
@@ -139,6 +141,7 @@
 		"cancel": "Cancelar",
 		"amount": "Monto",
 		"price": "Precio",
+		"extra_price": "Precio Extra",
 		"start_date": "Fecha de Inicio",
 		"end_date": "Fecha de Fin",
 		"category": "Categoría",
@@ -604,7 +607,7 @@
 		"phonepe_secret_key": "Clave Secreta de PhonePe"
 	},
 	"button": {
-		"add": "Add",
+		"add": "Agregar",
 		"save": "Save",
 		"edit": "Edit",
 		"delete": "Delete",
@@ -757,6 +760,9 @@
 		"order_ready_for_delivery": "Tu pedido está listo para ser entregado.",
 		"no_items_found": "¡No se encontraron productos! Intenta con otras palabras clave.",
 		"no_data_available": "No hay datos disponibles.",
+		"availability": "Disponibilidad",
+		"available": "Disponible",
+		"unavailable": "No Disponible",
 		"payment_method": "El método de pago es obligatorio.",
 		"special_instructions_limit": "El límite para instrucciones especiales es de 190 caracteres."
 	}

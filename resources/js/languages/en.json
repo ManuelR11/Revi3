@@ -12,6 +12,7 @@
         "order": "Order",
         "item": "Item",
         "items": "Items",
+        "complementos": "Complements",
         "taxes": "Taxes",
         "currencies": "Currencies",
         "mail": "Mail",
