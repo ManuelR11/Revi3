@@ -4164,10 +4164,6 @@ input:checked + div svg {
   --tw-bg-opacity: 1;
   background-color: rgb(26 183 89 / var(--tw-bg-opacity, 1));
 }
-.bg-\[\#1C346C\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(28 52 108 / var(--tw-bg-opacity, 1));
-}
 .bg-\[\#2AC769\] {
   --tw-bg-opacity: 1;
   background-color: rgb(42 199 105 / var(--tw-bg-opacity, 1));
@@ -4239,6 +4235,10 @@ input:checked + div svg {
 .bg-\[\#FFF5DE\] {
   --tw-bg-opacity: 1;
   background-color: rgb(255 245 222 / var(--tw-bg-opacity, 1));
+}
+.bg-\[\#e30613\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(227 6 19 / var(--tw-bg-opacity, 1));
 }
 .bg-black {
   --tw-bg-opacity: 1;
