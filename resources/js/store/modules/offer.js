@@ -55,38 +55,37 @@ export const offer = {
                 });
             });
         },
-        save: function (context, payload) {
+        save(context, payload) {
             return new Promise((resolve, reject) => {
                 let method = axios.post;
                 let url = '/admin/offer';
-                const temp = context.getters.temp; // {isEditing, temp_id, type, combo_price}
+
+                const temp = context.getters.temp;   // SOLO para saber si es edición + id
+                const fd   = payload.form;           // FormData ya construido en el componente
 
                 if (temp.isEditing) {
-                    method = axios.post;
                     url = `/admin/offer/${temp.temp_id}`;
                 }
 
-                const fd = payload.form; // ya viene como FormData
-
-                // Asegura que enviamos type
-                if (!fd.has('type') && temp.type != null) {
-                    fd.append('type', temp.type);
+                // 🔒 Asegura que el tipo se envía: si el form no lo trae, falla rápido (mejor que inventarlo)
+                const type = fd.get('type');
+                if (type === null || type === '') {
+                    return reject(new Error('Offer type is required in FormData.'));
                 }
 
-                // Si es COMBO, asegura combo_price (y no relies solo en amount)
-                // (Si tu formulario manda ambos, el backend validará según type)
-                if (temp.type === 2 /* COMBO */) {
-                    // si el form no lo mandó, intenta desde temp
-                    if (!fd.has('combo_price') && temp.combo_price != null) {
-                        fd.append('combo_price', temp.combo_price);
-                    }
-                }
+                // 🧠 Si es COMBO y no vino combo_price en el form, no inventes desde temp: deja que el backend valide
+                // (Opcional) Si quieres ser más estricto del lado del front:
+                // if (Number(type) === 2 && (fd.get('combo_price') === null || fd.get('combo_price') === '')) {
+                //   return reject(new Error('combo_price is required for COMBO'));
+                // }
 
-                method(url, fd).then(res => {
-                    context.dispatch('lists', payload.search).catch(() => {});
-                    context.commit('reset');
-                    resolve(res);
-                }).catch(reject);
+                method(url, fd)
+                    .then(res => {
+                        context.dispatch('lists', payload.search).catch(() => {});
+                        context.commit('reset');
+                        resolve(res);
+                    })
+                    .catch(reject);
             });
         },
         edit(context, payload) {

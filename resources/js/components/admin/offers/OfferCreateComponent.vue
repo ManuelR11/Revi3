@@ -70,15 +70,6 @@
                             type="text" id="combo_price" class="db-field-control" />
                         <small class="db-field-alert" v-if="errors.combo_price">{{ errors.combo_price[0] }}</small>
                     </div>
-                    <div class="form-col-12 sm:form-col-6">
-                        <label for="amount" class="db-field-title required">
-                            {{ $t("label.amount") }}
-                        </label>
-                        <input v-model="props.form.amount" v-on:keypress="floatNumber($event)"
-                            v-bind:class="errors.amount ? 'invalid' : ''" type="text" id="amount"
-                            class="db-field-control" value="0.5" />
-                        <small class="db-field-alert" v-if="errors.amount">{{ errors.amount[0] }}</small>
-                    </div>
 
                     <div class="form-col-12 sm:form-col-6">
                         <label for="start_date" class="db-field-title required">{{ $t("label.start_date") }}</label>
@@ -242,42 +233,58 @@ export default {
             try {
                 const fd = new FormData();
                 fd.append("name", this.props.form.name);
-                fd.append("amount", this.props.form.amount);
                 fd.append("start_date", this.props.form.start_date);
                 fd.append("end_date", this.props.form.end_date);
                 fd.append("status", this.props.form.status);
+
+                // 👇 añade type siempre
+                fd.append("type", this.props.form.type);
+
+                // 👇 según tipo, manda el campo correcto
+                if (this.props.form.type === this.enums.offerTypeEnum.DISCOUNT) {
+                    fd.append("amount", this.props.form.amount ?? "");
+                } else {
+                // COMBO
+                    fd.append("combo_price", this.props.form.combo_price ?? "");
+                }
+
                 if (this.image) {
                     fd.append("image", this.image);
                 }
+
                 const tempId = this.$store.getters["offer/temp"].temp_id;
                 this.loading.isActive = true;
-                this.$store
-                    .dispatch("offer/save", {
-                        form: fd,
-                        search: this.props.search,
-                    })
-                    .then((res) => {
-                        appService.sideDrawerHide();
-                        this.loading.isActive = false;
-                        alertService.successFlip(
-                            tempId === null ? 0 : 1,
-                            this.$t("menu.offers")
-                        );
-                        this.props.form = {
-                            name: "",
-                            amount: "",
-                            start_date: "",
-                            end_date: "",
-                            status: statusEnum.ACTIVE,
-                        };
-                        this.image = "";
-                        this.errors = {};
-                        this.$refs.imageProperty.value = null;
-                    })
-                    .catch((err) => {
-                        this.loading.isActive = false;
-                        this.errors = err.response.data.errors;
-                    });
+
+                this.$store.dispatch("offer/save", {
+                    form: fd,
+                    search: this.props.search,
+                })
+                .then(() => {
+                    appService.sideDrawerHide();
+                    this.loading.isActive = false;
+                    alertService.successFlip(
+                        tempId === null ? 0 : 1,
+                        this.$t("menu.offers")
+                    );
+                    // reset
+                    this.props.form = {
+                        name: "",
+                        amount: "",
+                        combo_price: "",
+                        type: this.enums.offerTypeEnum.DISCOUNT,
+                        start_date: "",
+                        end_date: "",
+                        status: statusEnum.ACTIVE,
+                    };
+                    this.image = "";
+                    this.errors = {};
+                    this.$refs.imageProperty.value = null;
+                })
+                .catch((err) => {
+                    this.loading.isActive = false;
+                    this.errors = err.response?.data?.errors ?? {};
+                });
+
             } catch (err) {
                 this.loading.isActive = false;
                 alertService.error(err);
