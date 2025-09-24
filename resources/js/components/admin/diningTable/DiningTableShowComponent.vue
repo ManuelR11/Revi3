@@ -31,7 +31,6 @@
 					:src="diningTable.qr_code"
 					alt="qrcode"
 				/>
-<<<<<<< HEAD
 				<p class="text-center mb-6">
 					<span class="block capitalize">{{ diningTable.name }}</span>
 				</p>
@@ -45,20 +44,6 @@
 						{{ `${window.location.origin}/menu/${diningTable.slug}` }}
 					</a>
 				</p>
-=======
-				<div v-if="tableLink" class="text-center mt-2">
-					<a
-						:href="tableLink"
-						target="_blank"
-						class="block text-primary underline break-all"
-					>
-						{{ tableLink }}
-					</a>
-				</div>
-				<p class="text-center mb-6">
-					<span class="block capitalize">{{ diningTable.name }}</span>
-				</p>
->>>>>>> 380b07f8dee7831f958ace2e7fb2c0a309ea2803
 
 				<p class="text-center">
 					<span class="block font-medium">{{ $t("message.table_scan") }}</span>
@@ -112,16 +97,6 @@ export default {
 		setting: function () {
 			return this.$store.getters["frontendSetting/lists"];
 		},
-<<<<<<< HEAD
-=======
-		tableLink() {
-			if (this.diningTable?.slug) {
-				// Si prefieres usar la URL base de la configuración, reemplaza window.location.origin por this.setting?.site_url
-				return `${window.location.origin}/menu/${this.diningTable.slug}`;
-			}
-			return "";
-		},
->>>>>>> 380b07f8dee7831f958ace2e7fb2c0a309ea2803
 	},
 	mounted() {
 		this.loading.isActive = true;
