@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Enums\TaxType;
 use App\Models\Currency;
 use App\Libraries\AppLibrary;
+use App\Models\OfferItem;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Smartisan\Settings\Facades\Settings;
 
@@ -41,6 +42,40 @@ class OrderItemResource extends JsonResource
             'tax_name'                         => $this->tax_name,
             'tax_currency_amount'              => AppLibrary::currencyAmountFormat($this->tax_amount),
             'total_without_tax_currency_price' => AppLibrary::currencyAmountFormat($this->total_price - $this->tax_amount),
+            'combo_items'                      => $this->comboItems(),
         ];
+    }
+
+    private function comboItems(): array
+    {
+        $item = $this->orderItem;
+
+        if (!$item) {
+            return [];
+        }
+
+        $item->loadMissing('comboOffer.offerItems.item');
+
+        $comboOffer = $item->comboOffer;
+
+        if (!$comboOffer) {
+            return [];
+        }
+
+        return $comboOffer->offerItems
+            ->map(function (OfferItem $offerItem) {
+                if (!$offerItem->item) {
+                    return null;
+                }
+
+                return [
+                    'item_id'   => $offerItem->item_id,
+                    'item_name' => $offerItem->item->name,
+                    'quantity'  => $offerItem->quantity ?? 1,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->toArray();
     }
 }

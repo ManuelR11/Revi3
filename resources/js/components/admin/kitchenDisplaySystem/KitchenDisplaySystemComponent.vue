@@ -37,6 +37,17 @@
                     </span>
                   </p>
                 </span>
+                <span class="flex gap-1" v-if="orderItem.combo_items.length > 0">
+                  <h3 class="capitalize text-xs w-fit whitespace-nowrap">{{ $t('label.combo_items') }}:
+                  </h3>
+                  <p class="text-xs font-normal font-client capitalize text-[#6E7191]">
+                    <span v-for="(comboItem, index) in orderItem.combo_items"
+                      :key="`combo-${orderItem.item_id}-${index}`" class="text-heading">
+                      {{ comboItem.quantity }}x {{ comboItem.item_name }}<span
+                        v-if="index + 1 < orderItem.combo_items.length">,&nbsp;</span>
+                    </span>
+                  </p>
+                </span>
                 <span class="flex gap-1" v-if="orderItem.instruction">
                   <h3 class="capitalize text-xs w-fit whitespace-nowrap">{{ $t('label.instruction') }}:
                   </h3>
@@ -158,6 +169,17 @@
                             </span>
                           </p>
                         </li>
+                        <li class="flex gap-1" v-if="item.combo_items.length > 0">
+                          <h3 class="capitalize text-xs w-fit whitespace-nowrap">{{ $t('label.combo_items') }}:
+                          </h3>
+                          <p class="text-xs font-normal font-client capitalize text-[#6E7191]">
+                            <span v-for="(comboItem, index) in item.combo_items"
+                              :key="`combo-${item.item_id}-${index}`" class="text-heading">
+                              {{ comboItem.quantity }}x {{ comboItem.item_name }}<span
+                                v-if="index + 1 < item.combo_items.length">,&nbsp;</span>
+                            </span>
+                          </p>
+                        </li>
                       </div>
                     </div>
                     <button v-if="dineinOrder.status === enums.orderStatusEnum.ACCEPT" type="button"
@@ -226,6 +248,17 @@
                           <p class="text-xs font-normal font-client capitalize text-[#6E7191]">
                             <span v-for="(extra, index) in item.item_extras" class="text-heading">
                               {{ extra.name }}<span v-if="index + 1 < item.item_extras.length">,&nbsp;</span>
+                            </span>
+                          </p>
+                        </li>
+                        <li class="flex gap-1" v-if="item.combo_items.length > 0">
+                          <h3 class="capitalize text-xs w-fit whitespace-nowrap">{{ $t('label.combo_items') }}:
+                          </h3>
+                          <p class="text-xs font-normal font-client capitalize text-[#6E7191]">
+                            <span v-for="(comboItem, index) in item.combo_items"
+                              :key="`combo-${item.item_id}-${index}`" class="text-heading">
+                              {{ comboItem.quantity }}x {{ comboItem.item_name }}<span
+                                v-if="index + 1 < item.combo_items.length">,&nbsp;</span>
                             </span>
                           </p>
                         </li>

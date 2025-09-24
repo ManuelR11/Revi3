@@ -32,37 +32,53 @@ class NormalItemResource extends JsonResource
             "variations"     => $this->variations->groupBy('item_attribute_id'),
             "itemAttributes" => ItemAttributeResource::collection($this->itemAttributeList($this->variations)),
             "extras"         => ItemExtraResource::collection($this->extras->load('item')),
-            "addons"         => ItemAddonResource::collection($this->addons->load('addonItem', 'addonItem.variations', 'addonItem.offer', 'item')),
-
+            "addons"         => ItemAddonResource::collection($this->addons->load('addonItem', 'addonItem.variations', 'addonItem.offer', 'addonItem.comboOffer', 'item')),
             // 👇 Solo descuenta si es DISCOUNT; si es COMBO, usa el precio del combo tal cual.
             "offer" => SimpleOfferResource::collection(
-                $this->offer->filter(function ($offer) use ($price) {
-                    $isActive = Carbon::now()->between($offer->start_date, $offer->end_date)
-                               && $offer->status === Status::ACTIVE;
-                    if (!$isActive) {
-                        return false;
-                    }
+                $this->mergeOffers()
+                    ->unique('id')
+                    ->filter(function ($offer) {
+                        return Carbon::now()->between($offer->start_date, $offer->end_date)
+                            && (int) $offer->status === Status::ACTIVE;
+                    })
+                    ->map(function ($offer) use ($price) {
+                        $isDiscount = (int) $offer->type === OfferType::DISCOUNT;
+                        $isComboForItem = (int) $offer->type === OfferType::COMBO
+                            && (int) $offer->combo_item_id === (int) $this->id;
+                        if (!$isDiscount && !$isComboForItem) {
+                            return null;
+                        }
 
-                    $final = $price;
+                        $final = $price;
+                        if ($isDiscount) {
+                            $final = $price - ($price * ((float) $offer->amount / 100));
+                        } elseif ($isComboForItem) {
+                            $final = $offer->combo_price ?? $offer->amount ?? $price;
+                        }
 
-                    if ((int)$offer->type === OfferType::DISCOUNT) {
-                        // amount se interpreta como porcentaje (0..100)
-                        $final = $price - ($price * ((float)$offer->amount / 100));
-                    } elseif ((int)$offer->type === OfferType::COMBO) {
-                        // combo: toma el precio directo desde BD (sin fórmulas)
-                        // si no tienes columna combo_price y reutilizas amount como precio:
-                        $final = $offer->combo_price ?? $offer->amount ?? $price;
-                    }
+                        $offer->flat_price     = AppLibrary::flatAmountFormat($final);
+                        $offer->convert_price  = AppLibrary::convertAmountFormat($final);
+                        $offer->currency_price = AppLibrary::currencyAmountFormat($final);
 
-                    // Inyecta los precios formateados para este offer
-                    $offer->flat_price     = AppLibrary::flatAmountFormat($final);
-                    $offer->convert_price  = AppLibrary::convertAmountFormat($final);
-                    $offer->currency_price = AppLibrary::currencyAmountFormat($final);
-
-                    return true;
-                })
+                        return $offer;
+                    })
+                    ->filter()
+                    ->values()
             ),
         ];
+    }
+
+    private function mergeOffers()
+    {
+        $offers = collect($this->offer ?? []);
+
+        if ($this->relationLoaded('comboOffer') && $this->comboOffer) {
+            $offers = collect([$this->comboOffer])->merge($offers);
+        } elseif ($this->comboOffer) {
+            $offers = collect([$this->comboOffer])->merge($offers);
+        }
+
+        return $offers;
     }
 
     private function itemAttributeList($variations)

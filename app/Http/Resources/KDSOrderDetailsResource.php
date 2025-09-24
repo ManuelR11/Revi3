@@ -30,7 +30,12 @@ class KDSOrderDetailsResource extends JsonResource
             'preparation_time'                    => $this->preparation_time,
             'status'                              => $this->status,
             'status_name'                         => trans('orderStatus.' . $this->status),
-            'order_items'                         => OrderItemResource::collection($this->orderItems->load('orderItem')),
+            'order_items'                         => OrderItemResource::collection(
+                $this->orderItems->load([
+                    'orderItem',
+                    'orderItem.comboOffer.offerItems.item',
+                ])
+            ),
             'table_name'                          => $this->diningTable?->name,
         ];
     }
