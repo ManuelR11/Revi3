@@ -4,6 +4,9 @@ import SiteComponent from "../../components/admin/settings/Site/SiteComponent";
 import ItemCategoryListComponent from "../../components/admin/settings/ItemCategory/ItemCateogryListComponent";
 import ItemCategoryComponent from "../../components/admin/settings/ItemCategory/ItemCategoryComponent";
 import ItemCategoryShowComponent from "../../components/admin/settings/ItemCategory/ItemCategoryShowComponent";
+import ComplementCategoryListComponent from "../../components/admin/settings/ComplementCategory/ComplementCategoryListComponent";
+import ComplementCategoryComponent from "../../components/admin/settings/ComplementCategory/ComplementCategoryComponent";
+import ComplementCategoryShowComponent from "../../components/admin/settings/ComplementCategory/ComplementCategoryShowComponent";
 import ItemAttributeComponent from "../../components/admin/settings/ItemAttribute/ItemAttributeComponent";
 import ItemAttributeListComponent from "../../components/admin/settings/ItemAttribute/ItemAttributeListComponent";
 import BranchComponent from "../../components/admin/settings/Branch/BranchComponent";
@@ -227,6 +230,42 @@ export default [
                         path: "show/:id",
                         component: ItemCategoryShowComponent,
                         name: "admin.settings.itemCategory.show",
+                        meta: {
+                            isFrontend: false,
+                            auth: true,
+                            permissionUrl: "settings",
+                            breadcrumb: "view",
+                        },
+                    },
+                ],
+            },
+            {
+                path: "complement-categories",
+                component: ComplementCategoryComponent,
+                name: "admin.settings.complementCategory",
+                redirect: { name: "admin.settings.complementCategory.list" },
+                meta: {
+                    isFrontend: false,
+                    auth: true,
+                    permissionUrl: "settings",
+                    breadcrumb: "complement_categories",
+                },
+                children: [
+                    {
+                        path: "list",
+                        component: ComplementCategoryListComponent,
+                        name: "admin.settings.complementCategory.list",
+                        meta: {
+                            isFrontend: false,
+                            auth: true,
+                            permissionUrl: "settings",
+                            breadcrumb: "",
+                        },
+                    },
+                    {
+                        path: "show/:id",
+                        component: ComplementCategoryShowComponent,
+                        name: "admin.settings.complementCategory.show",
                         meta: {
                             isFrontend: false,
                             auth: true,

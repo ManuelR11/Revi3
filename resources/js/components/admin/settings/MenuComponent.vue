@@ -51,6 +51,10 @@
                 <i class="lab lab-item-categories text-sm"></i>
                 {{ $t("menu.item_categories") }}
             </router-link>
+            <router-link :to="{ name: 'admin.settings.complementCategory' }" class="db-tab-btn">
+                <i class="lab lab-item-categories text-sm"></i>
+                {{ $t("menu.complement_categories") }}
+            </router-link>
             <router-link :to="{ name: 'admin.settings.itemAttribute' }" class="db-tab-btn">
                 <i class="lab lab-item-attributes text-sm"></i>
                 {{ $t("menu.item_attributes") }}
