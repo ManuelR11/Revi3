@@ -10,6 +10,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Models\Pivots\ComplementItem;
 
 class Item extends Model implements HasMedia
 {
@@ -92,6 +93,13 @@ class Item extends Model implements HasMedia
     public function addons(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ItemAddon::class);
+    }
+    
+    public function complements(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Complement::class, 'complement_item')
+            ->using(ComplementItem::class)
+            ->withTimestamps();
     }
 
     public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo

@@ -46,6 +46,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ItemVariationTableSeeder::class);
         $this->call(ItemExtraTableSeeder::class);
         $this->call(ItemAddonTableSeeder::class);
+        $this->call(ComplementTableSeeder::class);
         $this->call(OfferTableSeeder::class);
         $this->call(OfferItemTableSeeder::class);
         $this->call(OrderTableSeeder::class);
