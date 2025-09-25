@@ -716,6 +716,8 @@
 	"message": {
 		"pagination_label": "Mostrando de {from} a {to} de {total} entradas",
 		"name_field_required": "El campo nombre es obligatorio.",
+		"extra_price_field_required": "El campo precio extra es obligatorio.",
+		"category_field_required": "El campo categoría es obligatorio.",
 		"password_update": "Contraseña actualizada con éxito.",
 		"photo_update": "Foto actualizada con éxito.",
 		"image_upload": "Imagen subida con éxito.",

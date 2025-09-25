@@ -86,6 +86,7 @@
 import LoadingComponent from "../components/LoadingComponent";
 import SmSidebarModalCreateComponent from "../components/buttons/SmSidebarModalCreateComponent";
 import appService from "../../../services/appService";
+import alertService from "../../../services/alertService";
 
 export default {
     name: "ComplementoCreateComponent",
@@ -174,15 +175,15 @@ export default {
             let hasErrors = false;
 
             if (!this.props.form.name) {
-                this.errors.name = 'El nombre es requerido';
+                this.errors.name = this.$t('message.name_field_required');
                 hasErrors = true;
             }
             if (!this.props.form.extra_price && this.props.form.extra_price !== 0) {
-                this.errors.extra_price = 'El precio extra es requerido';
+                this.errors.extra_price = this.$t('message.extra_price_field_required');
                 hasErrors = true;
             }
             if (!this.props.form.category) {
-                this.errors.category = 'La categoría es requerida';
+                this.errors.category = this.$t('message.category_field_required');
                 hasErrors = true;
             }
 

@@ -715,6 +715,8 @@
     "message": {
         "pagination_label": "Showing {from} to {to} of {total} entries",
         "name_field_required": "The name field is required.",
+        "extra_price_field_required": "The extra price field is required.",
+        "category_field_required": "The category field is required.",
         "password_update": "Password Updated Successfully.",
         "photo_update": "Photo Updated Successfully.",
         "image_upload": "Image Upload Successfully.",

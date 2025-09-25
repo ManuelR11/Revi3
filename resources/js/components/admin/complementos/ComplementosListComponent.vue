@@ -19,8 +19,8 @@
                         <ImportComponent />
                         <div
                             class="dropdown-list db-card-filter-dropdown-list transition-all duration-300 scale-y-0 origin-top">
-                            <SampleFileComponent @sample-file="sampleFile" />
-                            <UploadFileComponent @upload="upload" />
+                            <SampleFileComponent @click="sampleFile" />
+                            <UploadFileComponent :dataModal="'complementoUpload'" @click="uploadModal('#complementoUpload')" />
                         </div>
                     </div>
                     <ComplementoCreateComponent :props="props" :editingComplemento="editingComplemento" @complemento-created="addComplementoToList" @complemento-updated="updateComplementoInList" @clear-editing-state="clearEditingState" />
@@ -155,6 +155,7 @@ import SampleFileComponent from "../components/buttons/import/SampleFileComponen
 import UploadFileComponent from "../components/buttons/import/UploadFileComponent";
 import ImportComponent from "../components/buttons/import/ImportComponent";
 import ComplementoUploadComponent from "./ComplementoUploadComponent.vue";
+import alertService from "../../../services/alertService";
 
 export default {
     name: "ComplementosListComponent",
@@ -319,15 +320,16 @@ export default {
                         if (index !== -1) {
                             const complementoName = this.complementos[index].name;
                             this.complementos.splice(index, 1);
+                            alertService.successFlip(2, this.$t('menu.complementos'));
                         } else {
-                            this.$toast.error('No se pudo encontrar el complemento a eliminar');
+                            alertService.error('No se pudo encontrar el complemento a eliminar');
                         }
                         this.loading.isActive = false;
                     }, 1000);
 
                 } catch (err) {
                     this.loading.isActive = false;
-                    this.$toast.error('Error al eliminar el complemento');
+                    alertService.error('Error al eliminar el complemento');
                 }
             }).catch((err) => {
                 this.loading.isActive = false;
@@ -345,6 +347,7 @@ export default {
                 created_at: new Date().toISOString()
             });
 
+            alertService.successFlip(0, this.$t('menu.complementos'));
             this.editingComplemento = null;
         },
         updateComplementoInList(updatedComplemento) {
@@ -361,9 +364,9 @@ export default {
                     description: updatedComplemento.description,
                     updated_at: new Date().toISOString()
                 };
+                alertService.successFlip(1, this.$t('menu.complementos'));
             } else {
-                console.error('No se pudo encontrar el complemento a actualizar con ID:', updatedComplemento.id);
-                console.error('IDs disponibles:', this.complementos.map(c => c.id));
+                alertService.error('No se pudo encontrar el complemento a actualizar');
             }
             
             this.editingComplemento = null;
@@ -404,21 +407,49 @@ export default {
                     URL.revokeObjectURL(link.href);
 
                     this.loading.isActive = false;
-                    this.$toast.success('¡Complementos exportados exitosamente!');
+                    alertService.success('Complementos exportados exitosamente');
                 } catch (err) {
                     this.loading.isActive = false;
-                    this.$toast.error('Error al exportar complementos');
+                    alertService.error('Error al exportar complementos');
                 }
             }, 1000);
         },
         sampleFile() {
             console.log('Descargando archivo de muestra para complementos');
-            // Por ahora solo mostramos un mensaje
-            this.$toast.info('Archivo de muestra para complementos en desarrollo');
+            try {
+                // Crear un archivo de muestra CSV
+                const headers = ['name', 'category', 'extra_price', 'status', 'description'];
+                const sampleData = [
+                    ['Salsa BBQ', 'Opcional', '2.50', '5', 'Deliciosa salsa BBQ casera'],
+                    ['Queso Extra', 'Opcional', '3.00', '5', 'Queso cheddar premium adicional'],
+                    ['Pollo Extra', 'Obligatorio', '5.00', '5', 'Porción adicional de pollo a la parrilla']
+                ];
+                
+                const csvContent = [
+                    headers.join(','),
+                    ...sampleData.map(row => row.map(cell => `"${cell}"`).join(','))
+                ].join('\n');
+
+                const blob = new Blob([csvContent], {
+                    type: "text/csv;charset=utf-8;",
+                });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "complementos_sample.csv";
+                link.click();
+                URL.revokeObjectURL(link.href);
+
+                alertService.success('Archivo de muestra descargado correctamente');
+            } catch (err) {
+                alertService.error('Error al descargar el archivo de muestra');
+            }
         },
         upload() {
             console.log('Abriendo modal de importación de complementos');
-            appService.sidebarModalToggle();
+            this.uploadModal('#complementoUpload');
+        },
+        uploadModal: function (id) {
+            return appService.modalShow(id);
         },
     }
 }
