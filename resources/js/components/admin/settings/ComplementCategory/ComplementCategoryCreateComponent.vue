@@ -19,36 +19,6 @@
                             <small class="db-field-alert" v-if="errors.name">{{ errors.name[0] }}</small>
                         </div>
 
-                        <div class="form-col-12 sm:form-col-6">
-                            <label for="image" class="db-field-title">{{ $t("label.image") }} (74px,48px)</label>
-                            <input @change="changeImage" v-bind:class="errors.image ? 'invalid' : ''" id="image"
-                                type="file" class="db-field-control" ref="imageProperty"
-                                accept="image/png, image/jpeg, image/jpg">
-                            <small class="db-field-alert" v-if="errors.image">{{ errors.image[0] }}</small>
-                        </div>
-
-                        <div class="form-col-12 sm:form-col-6">
-                            <label class="db-field-title required" for="active_complement">{{ $t("label.status") }}</label>
-                            <div class="db-field-radio-group">
-                                <div class="db-field-radio">
-                                    <div class="custom-radio">
-                                        <input :value="enums.statusEnum.ACTIVE" v-model="props.form.status" id="active_complement"
-                                            type="radio" class="custom-radio-field">
-                                        <span class="custom-radio-span"></span>
-                                    </div>
-                                    <label for="active_complement" class="db-field-label">{{ $t("label.active") }}</label>
-                                </div>
-                                <div class="db-field-radio">
-                                    <div class="custom-radio">
-                                        <input :value="enums.statusEnum.INACTIVE" v-model="props.form.status"
-                                            type="radio" id="inactive_complement" class="custom-radio-field">
-                                        <span class="custom-radio-span"></span>
-                                    </div>
-                                    <label for="inactive_complement" class="db-field-label">{{ $t("label.inactive") }}</label>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="form-col-12">
                             <label for="description" class="db-field-title">{{ $t("label.description") }}</label>
                             <textarea v-model="props.form.description"
@@ -79,7 +49,6 @@
 <script>
 import SmModalCreateComponent from "../../components/buttons/SmModalCreateComponent";
 import LoadingComponent from "../../components/LoadingComponent";
-import statusEnum from "../../../../enums/modules/statusEnum";
 import alertService from "../../../../services/alertService";
 import appService from "../../../../services/appService";
 
@@ -92,14 +61,6 @@ export default {
             loading: {
                 isActive: false
             },
-            enums: {
-                statusEnum: statusEnum,
-                statusEnumArray: {
-                    [statusEnum.ACTIVE]: this.$t("label.active"),
-                    [statusEnum.INACTIVE]: this.$t("label.inactive")
-                }
-            },
-            image: "",
             errors: {},
         }
     },
@@ -107,63 +68,62 @@ export default {
         addButton: function () {
             return { title: this.$t('button.add_complement_category') };
         },
+        isEditing: function () {
+            const tempId = this.$store.getters['categoryComplement/temp'];
+            return tempId && tempId !== null;
+        }
     },
     methods: {
-        changeImage: function (e) {
-            this.image = e.target.files[0];
-        },
         reset: function () {
             appService.modalHide();
             this.errors = {};
             this.$props.props.form = {
                 name: "",
-                description: "",
-                status: statusEnum.ACTIVE
-            }
-            if (this.image) {
-                this.image = "";
-                if (this.$refs.imageProperty) {
-                    this.$refs.imageProperty.value = null;
-                }
-            }
-            // Limpiar el ID de edición en el componente padre
-            this.$parent.editingCategoryId = null;
+                description: ""
+            };
+            // Limpiar los datos temporales del store
+            this.$store.commit('categoryComplement/reset');
         },
 
         save: function () {
-            try {
-                if (!this.props.form.name) {
-                    this.errors = { name: [this.$t('message.name_field_required')] };
-                    return;
-                }
-                
-                this.loading.isActive = true;
-                
-                // Simulamos el guardado
-                setTimeout(() => {
+            this.loading.isActive = true;
+            this.errors = {};
+
+            const data = {
+                name: this.props.form.name,
+                description: this.props.form.description
+            };
+
+            // Si estamos editando, incluir el ID
+            if (this.isEditing) {
+                data.id = this.$store.getters['categoryComplement/temp'];
+            }
+
+            this.$store.dispatch('categoryComplement/save', data)
+                .then(() => {
                     this.loading.isActive = false;
-                    appService.modalHide();
-                    alertService.successFlip(0, this.$t('label.complement_category'));
+                    alertService.successFlip(
+                        this.isEditing ? 1 : 0, 
+                        this.$t('label.complement_category')
+                    );
                     
                     // Emitimos evento para que el componente padre actualice la lista
                     this.$emit('category-saved');
                     
+                    // Limpiar formulario
                     this.props.form = {
                         name: "",
-                        description: "",
-                        status: statusEnum.ACTIVE,
+                        description: ""
+                    };
+                })
+                .catch((error) => {
+                    this.loading.isActive = false;
+                    if (error.response && error.response.data && error.response.data.errors) {
+                        this.errors = error.response.data.errors;
+                    } else {
+                        alertService.error(error.response?.data?.message || this.$t('error_saving_complement_category'));
                     }
-                    this.image = "";
-                    this.errors = {};
-                    if (this.$refs.imageProperty) {
-                        this.$refs.imageProperty.value = null;
-                    }
-                }, 1000);
-
-            } catch (err) {
-                this.loading.isActive = false;
-                alertService.error(err)
-            }
+                });
         }
     }
 }

@@ -144,6 +144,8 @@
 		"price": "Precio",
 		"extra_price": "Precio Extra",
 		"add_complements": "Agregar Complemento",
+		"created_at": "Creado En",
+		"updated_at": "Actualizado En",
 		"required": "Obligatorio",
 		"optional": "Opcional",
 		"start_date": "Fecha de Inicio",

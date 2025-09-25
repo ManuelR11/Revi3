@@ -30,20 +30,16 @@
                     <tr class="db-table-head-tr">
                         <th class="db-table-head-th"><i class="lab lab-list"></i></th>
                         <th class="db-table-head-th">{{ $t("label.name") }}</th>
-                        <th class="db-table-head-th">{{ $t("label.status") }}</th>
+                        <th class="db-table-head-th">{{ $t("label.description") }}</th>
                         <th class="db-table-head-th">{{ $t("label.action") }}</th>
                     </tr>
                 </thead>
                 <draggable tag="tbody" class="db-table-body" v-if="categories.length > 0" v-model="categories"
                     @end="sortCategory" :handle="'.drag-handle'">
-                    <tr class="db-table-body-tr" v-for="complementCategory in categories" :key="complementCategory">
+                    <tr class="db-table-body-tr" v-for="complementCategory in categories" :key="complementCategory.id">
                         <td class="db-table-body-td"><i class="lab lab-move cursor-move drag-handle"></i></td>
                         <td class="db-table-body-td">{{ complementCategory.name }}</td>
-                        <td class="db-table-body-td">
-                            <span :class="statusClass(complementCategory.status)">
-                                {{ enums.statusEnumArray[complementCategory.status] }}
-                            </span>
-                        </td>
+                        <td class="db-table-body-td">{{ complementCategory.description || '-' }}</td>
                         <td class="db-table-body-td">
                             <div class="flex justify-start items-center sm:items-start sm:justify-start gap-1.5">
                                 <SmViewComponent :link="'admin.settings.complementCategory.show'" :id="complementCategory.id" />
@@ -137,141 +133,91 @@ export default {
             props: {
                 form: {
                     name: "",
-                    status: statusEnum.ACTIVE,
                     description: ""
                 },
                 search: {
                     paginate: 1,
                     page: 1,
                     per_page: 10,
-                    order_column: 'sort',
-                    order_type: 'asc',
                 }
             },
-            categories: [],
-            editingCategoryId: null,
+
             ENV: ENV
         }
     },
     computed: {
-        complementCategories: function () {
-            // Por ahora simulamos datos hasta que tengamos el store
-            return this.categories;
+        categories: function () {
+            return this.$store.getters['categoryComplement/lists'] || [];
         },
         pagination: function () {
-            // Simulamos paginación
-            return {
-                current_page: 1,
-                last_page: 1,
-                per_page: 10,
-                total: this.categories.length
-            };
+            return this.$store.getters['categoryComplement/pagination'];
         },
         paginationPage: function () {
-            return 1;
+            return this.$store.getters['categoryComplement/page'];
         }
     },
     mounted() {
         this.list();
     },
     methods: {
-        statusClass: function (status) {
-            return appService.statusClass(status);
-        },
         textShortener: function (text, number = 30) {
             return appService.textShortener(text, number);
         },
         list: function (page = 1) {
             this.loading.isActive = true;
-            // Simulamos datos de categorías de complementos con persistencia local
-            setTimeout(() => {
-                // Cargar datos desde localStorage o usar datos por defecto
-                const savedCategories = localStorage.getItem('complementCategories');
-                if (savedCategories) {
-                    this.categories = JSON.parse(savedCategories);
-                } else {
-                    this.categories = [
-                        {
-                            id: 1,
-                            name: 'Bebidas',
-                            status: statusEnum.ACTIVE,
-                            description: 'Categoría de bebidas complementarias'
-                        },
-                        {
-                            id: 2,
-                            name: 'Postres',
-                            status: statusEnum.ACTIVE,
-                            description: 'Categoría de postres complementarios'
-                        },
-                        {
-                            id: 3,
-                            name: 'Salsas',
-                            status: statusEnum.INACTIVE,
-                            description: 'Categoría de salsas adicionales'
-                        }
-                    ];
-                    // Guardar datos iniciales
-                    localStorage.setItem('complementCategories', JSON.stringify(this.categories));
-                }
+            
+            // Construir parámetros válidos para PaginateRequest
+            const searchParams = {
+                page: page,
+                per_page: this.props.search.per_page || 10
+            };
+            
+            this.$store.dispatch('categoryComplement/lists', searchParams).then((res) => {
                 this.loading.isActive = false;
-            }, 500);
+            }).catch((err) => {
+                this.loading.isActive = false;
+                console.error('List error:', err);
+                alertService.error(err.response?.data?.message || 'Error al cargar las categorías');
+            });
         },
-        saveToLocalStorage: function() {
-            localStorage.setItem('complementCategories', JSON.stringify(this.categories));
-        },
+
         edit: function (complementCategory) {
             appService.modalShow("#complementCategoryModal");
-            this.loading.isActive = true;
-            // Guardamos el ID para saber que estamos editando
-            this.editingCategoryId = complementCategory.id;
+            this.$store.dispatch('categoryComplement/edit', complementCategory.id);
             this.props.form = {
                 name: complementCategory.name,
-                status: complementCategory.status,
                 description: complementCategory.description
             };
-            this.loading.isActive = false;
         },
         handleCategorySaved: function() {
-            if (this.editingCategoryId) {
-                // Estamos editando
-                const index = this.categories.findIndex(cat => cat.id === this.editingCategoryId);
-                if (index !== -1) {
-                    this.categories[index] = {
-                        ...this.categories[index],
-                        name: this.props.form.name,
-                        status: this.props.form.status,
-                        description: this.props.form.description
-                    };
-                }
-                this.editingCategoryId = null;
-            } else {
-                // Estamos creando
-                const newCategory = {
-                    id: Math.max(...this.categories.map(c => c.id)) + 1,
-                    name: this.props.form.name,
-                    status: this.props.form.status,
-                    description: this.props.form.description
-                };
-                this.categories.push(newCategory);
-            }
-            this.saveToLocalStorage();
+            // Recargar la lista para obtener los datos actualizados del servidor
             this.list();
+            
+            // Limpiar el formulario
+            this.props.form = {
+                name: '',
+                description: ''
+            };
+            
+            // Cerrar el modal
+            appService.modalHide("#complementCategoryModal");
+            
+            // Mostrar notificación de éxito
+            alertService.success(this.$t('complement_category_saved_successfully'));
         },
         destroy: function (id) {
             appService.destroyConfirmation().then((res) => {
-                try {
-                    this.loading.isActive = true;
-                    // Simulamos eliminación
-                    setTimeout(() => {
-                        this.categories = this.categories.filter(cat => cat.id !== id);
-                        this.saveToLocalStorage();
+                this.loading.isActive = true;
+                this.$store.dispatch('categoryComplement/destroy', id)
+                    .then(() => {
                         this.loading.isActive = false;
-                        alertService.successFlip(null, 'Categoría de complemento');
-                    }, 500);
-                } catch (err) {
-                    this.loading.isActive = false;
-                    alertService.error('Error al eliminar la categoría');
-                }
+                        alertService.successFlip(null, this.$t('complement_category'));
+                        this.list(); // Recargar la lista
+                    })
+                    .catch((error) => {
+                        this.loading.isActive = false;
+                        alertService.error(error.response?.data?.message || this.$t('error_deleting_complement_category'));
+                    });
             }).catch((err) => {
                 this.loading.isActive = false;
             })
@@ -282,15 +228,13 @@ export default {
         },
         xls: function () {
             this.loading.isActive = true;
-            // Simulamos exportación
-            setTimeout(() => {
-                this.loading.isActive = false;
-                // Crear datos CSV simulados
+            try {
+                // Crear datos CSV
                 const csvData = this.categories.map(cat => 
-                    `${cat.name},${cat.status === statusEnum.ACTIVE ? 'Activo' : 'Inactivo'},${cat.description}`
+                    `${cat.name},${cat.description || ''}`
                 ).join('\n');
                 
-                const header = 'Nombre,Estado,Descripción\n';
+                const header = 'Nombre,Descripción\n';
                 const fullCsv = header + csvData;
                 
                 const blob = new Blob([fullCsv], { type: 'text/csv;charset=utf-8;' });
@@ -303,7 +247,13 @@ export default {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-            }, 1000);
+                
+                this.loading.isActive = false;
+                alertService.success(this.$t('exported_successfully'));
+            } catch (error) {
+                this.loading.isActive = false;
+                alertService.error(this.$t('export_error'));
+            }
         },
         uploadModal: function (id) {
             appService.modalShow(id);

@@ -4,6 +4,7 @@ import createPersistedState from "vuex-persistedstate";
 import { auth } from "./modules/auth";
 import { company } from "./modules/company";
 import { itemCategory } from "./modules/itemCategory";
+import { categoryComplement } from "./modules/categoryComplement";
 import { itemAttribute } from "./modules/itemAttribute";
 import { branch } from "./modules/branch";
 import { offer } from "./modules/offer";
@@ -82,6 +83,7 @@ export default new createStore({
         auth,
         company,
         itemCategory,
+        categoryComplement,
         itemAttribute,
         branch,
         offer,

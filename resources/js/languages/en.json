@@ -143,6 +143,8 @@
         "price": "Price",
         "extra_price": "Extra Price",
         "add_complements": "Add Complement",
+        "created_at": "Created At",
+        "updated_at": "Updated At",
         "required": "Required",
         "optional": "Optional",
         "start_date": "Start Date",
