@@ -19,6 +19,7 @@ use App\Http\Controllers\Auth\SignupController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\WaiterController;
 use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\CategoryComplementController;
 use App\Http\Controllers\Admin\LicenseController;
 use App\Http\Controllers\Admin\AnalyticController;
 use App\Http\Controllers\Admin\CurrencyController;
@@ -349,6 +350,13 @@ Route::prefix('admin')->name('admin.')->middleware(['installed', 'apiKey', 'auth
         Route::delete('/address/{employee}/{address}', [EmployeeAddressController::class, 'destroy']);
     });
 
+     Route::prefix('category-complement')->name('category-complement.')->group(function () {
+        Route::get('/', [CategoryComplementController::class, 'index']);
+        Route::get('/show/{categoryComplement}', [CategoryComplementController::class, 'show']);
+        Route::post('/', [CategoryComplementController::class, 'store']);
+        Route::match(['put', 'patch'], '/{categoryComplement}', [CategoryComplementController::class, 'update']);
+        Route::delete('/{categoryComplement}', [CategoryComplementController::class, 'destroy']);
+    });
 
     Route::prefix('offer')->name('offer.')->group(function () {
         Route::get('/', [OfferController::class, 'index']);
