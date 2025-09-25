@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\ComplementItem;
+use App\Models\Pivots\CategoryComplementPivot;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -30,10 +31,19 @@ class Complement extends Model
 
     protected $dates = ['deleted_at'];
 
+    // 🔗 Relación con Items
     public function items(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'complement_item')
             ->using(ComplementItem::class)
+            ->withTimestamps();
+    }
+
+    // 🔗 Relación con Categorías de Complementos
+    public function categories(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(CategoryComplement::class, 'category_complement_complement')
+            ->using(CategoryComplementPivot::class)
             ->withTimestamps();
     }
 }
