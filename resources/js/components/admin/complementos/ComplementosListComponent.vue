@@ -15,10 +15,15 @@
                             <ExcelComponent :method="xls" />
                         </div>
                     </div>
-                    <button class="db-btn h-[37px] text-white bg-primary" @click="showCreateModal">
-                        <i class="lab lab-add"></i>
-                        <span>{{ $t('label.add') }} {{ $t('menu.complementos') }}</span>
-                    </button>
+                    <div class="dropdown-group">
+                        <ImportComponent />
+                        <div
+                            class="dropdown-list db-card-filter-dropdown-list transition-all duration-300 scale-y-0 origin-top">
+                            <SampleFileComponent @sample-file="sampleFile" />
+                            <UploadFileComponent @upload="upload" />
+                        </div>
+                    </div>
+                    <ComplementoCreateComponent :props="props" :editingComplemento="editingComplemento" @complemento-created="addComplementoToList" @complemento-updated="updateComplementoInList" @clear-editing-state="clearEditingState" />
                 </div>
             </div>
 
@@ -101,13 +106,14 @@
                                 </span>
                             </td>
                             <td class="db-table-body-td">
-                                <span class="font-medium text-primary">{{ complemento.currency_extra_price }}</span>
+                                <span class="font-medium text-primary">${{ parseFloat(complemento.extra_price || 0).toFixed(2) }}</span>
                             </td>
                             <td class="db-table-body-td">
                                 <span :class="statusClass(complemento.status)">{{ enums.statusEnumArray[complemento.status] }}</span>
                             </td>
                             <td class="db-table-body-td hidden-print">
                                 <div class="flex justify-start items-center sm:items-start sm:justify-start gap-1.5">
+                                    <SmIconViewComponent :link="'admin.complemento.show'" :id="complemento.id" />
                                     <SmIconSidebarModalEditComponent @click="edit(complemento)" />
                                     <SmIconDeleteComponent @click="destroy(complemento.id)" />
                                 </div>
@@ -126,6 +132,8 @@
             </div>
         </div>
     </div>
+
+    <ComplementoUploadComponent @file-uploaded="list" />
 </template>
 
 <script>
@@ -135,11 +143,18 @@ import FilterComponent from "../components/buttons/collapse/FilterComponent";
 import ExportComponent from "../components/buttons/export/ExportComponent";
 import PrintComponent from "../components/buttons/export/PrintComponent";
 import ExcelComponent from "../components/buttons/export/ExcelComponent";
+import ComplementoCreateComponent from "./ComplementoCreateComponent.vue";
 import SmIconSidebarModalEditComponent from "../components/buttons/SmIconSidebarModalEditComponent";
+import SmIconViewComponent from "../components/buttons/SmIconViewComponent";
+import appService from "../../../services/appService";
 import SmIconDeleteComponent from "../components/buttons/SmIconDeleteComponent";
 import PaginationSMBox from "../components/pagination/PaginationSMBox";
 import PaginationTextComponent from "../components/pagination/PaginationTextComponent";
 import PaginationBox from "../components/pagination/PaginationBox";
+import SampleFileComponent from "../components/buttons/import/SampleFileComponent";
+import UploadFileComponent from "../components/buttons/import/UploadFileComponent";
+import ImportComponent from "../components/buttons/import/ImportComponent";
+import ComplementoUploadComponent from "./ComplementoUploadComponent.vue";
 
 export default {
     name: "ComplementosListComponent",
@@ -150,11 +165,17 @@ export default {
         ExportComponent,
         PrintComponent,
         ExcelComponent,
+        ComplementoCreateComponent,
+        SmIconViewComponent,
         SmIconSidebarModalEditComponent,
         SmIconDeleteComponent,
         PaginationSMBox,
         PaginationTextComponent,
-        PaginationBox
+        PaginationBox,
+        SampleFileComponent,
+        UploadFileComponent,
+        ImportComponent,
+        ComplementoUploadComponent
     },
     data() {
         return {
@@ -176,15 +197,20 @@ export default {
                     extra_price: '',
                     complemento_category_id: null,
                     status: null
-                }
+                },
+                form: {
+                    name: '',
+                    extra_price: '',
+                    category: 'Obligatorio',
+                    status: 5,
+                    description: ''
+                },
+                errors: {}
             },
             complementos: [],
             complementoCategories: [
-                { id: 1, name: 'Salsas' },
-                { id: 2, name: 'Quesos' },
-                { id: 3, name: 'Proteínas Extra' },
-                { id: 4, name: 'Vegetales' },
-                { id: 5, name: 'Bebidas Extra' }
+                { id: 1, name: 'Obligatorio', description: 'Complementos que vienen incluidos por defecto' },
+                { id: 2, name: 'Opcional', description: 'Complementos que el cliente puede agregar por un costo extra' }
             ],
             pagination: {
                 current_page: 1,
@@ -196,7 +222,8 @@ export default {
             printObj: {
                 id: "print",
                 popTitle: this.$t('menu.complementos')
-            }
+            },
+            editingComplemento: null
         }
     },
     mounted() {
@@ -204,48 +231,50 @@ export default {
     },
     methods: {
         permissionChecker(permission) {
-            return true; // Temporal - implementar permisos después
+            return true;
         },
         statusClass(status) {
-            return status === 5 ? 'text-[10px] text-white bg-success px-2 py-1 rounded-2xl capitalize' 
-                                : 'text-[10px] text-white bg-danger px-2 py-1 rounded-2xl capitalize';
+            return status === 5 ? 'text-[10px] text-green-700 bg-green-100 px-2 py-1 rounded capitalize' 
+                                : 'text-[10px] text-red-700 bg-red-100 px-2 py-1 rounded capitalize';
         },
         list() {
             this.loading.isActive = true;
-            // Datos de ejemplo
             setTimeout(() => {
                 this.complementos = [
                     {
                         id: 1,
                         name: 'Salsa BBQ',
-                        category_name: 'Salsas',
-                        extra_price: 2.50,
-                        currency_extra_price: '$2.50',
+                        category_name: 'Obligatorio',
+                        extra_price: 0.00,
                         status: 5,
-                        image: null
+                        image: null,
+                        description: 'Deliciosa salsa BBQ casera'
                     },
                     {
                         id: 2,
                         name: 'Queso Cheddar Extra',
-                        category_name: 'Quesos',
+                        category_name: 'Opcional',
                         extra_price: 3.00,
-                        currency_extra_price: '$3.00',
                         status: 5,
-                        image: null
+                        image: null,
+                        description: 'Queso cheddar premium adicional'
                     },
                     {
                         id: 3,
                         name: 'Pollo Extra',
-                        category_name: 'Proteínas Extra',
+                        category_name: 'Opcional',
                         extra_price: 5.00,
-                        currency_extra_price: '$5.00',
                         status: 5,
-                        image: null
+                        image: null,
+                        description: 'Porción adicional de pollo a la parrilla'
                     }
                 ];
                 this.pagination.total = this.complementos.length;
                 this.loading.isActive = false;
             }, 500);
+        },
+        handleSlide: function (id) {
+            return appService.handleSlide(id);
         },
         search() {
             this.list();
@@ -265,24 +294,132 @@ export default {
             this.list();
         },
         edit(complemento) {
-            console.log('Editando complemento:', complemento);
+            this.editingComplemento = complemento;            
+            appService.sideDrawerShow();
+            this.loading.isActive = true;
+            this.props.errors = {};            
+            const categoryValue = complemento.category_name || complemento.category || 'Obligatorio';
+            
+            this.props.form = {
+                name: complemento.name,
+                extra_price: complemento.extra_price.toString(),
+                category: categoryValue,
+                status: complemento.status,
+                description: complemento.description || ''
+            };
+            this.loading.isActive = false;
         },
         destroy(id) {
-            if (confirm('¿Estás seguro de eliminar este complemento?')) {
-                console.log('Eliminando complemento:', id);
-            }
+            appService.destroyConfirmation().then((res) => {
+                try {
+                    this.loading.isActive = true;
+                    
+                    setTimeout(() => {
+                        const index = this.complementos.findIndex(c => c.id === id);
+                        if (index !== -1) {
+                            const complementoName = this.complementos[index].name;
+                            this.complementos.splice(index, 1);
+                        } else {
+                            this.$toast.error('No se pudo encontrar el complemento a eliminar');
+                        }
+                        this.loading.isActive = false;
+                    }, 1000);
+
+                } catch (err) {
+                    this.loading.isActive = false;
+                    this.$toast.error('Error al eliminar el complemento');
+                }
+            }).catch((err) => {
+                this.loading.isActive = false;
+            });
         },
-        showCreateModal() {
-            alert('Modal de crear complemento (próximamente)');
+        addComplementoToList(newComplemento) {
+            this.complementos.unshift({
+                id: Date.now(),
+                name: newComplemento.name,
+                category: newComplemento.category,
+                category_name: newComplemento.category,
+                extra_price: newComplemento.extra_price,
+                status: newComplemento.status,
+                description: newComplemento.description,
+                created_at: new Date().toISOString()
+            });
+
+            this.editingComplemento = null;
+        },
+        updateComplementoInList(updatedComplemento) {
+            const index = this.complementos.findIndex(c => c.id === updatedComplemento.id);
+
+            if (index !== -1) {
+                this.complementos[index] = {
+                    ...this.complementos[index],
+                    name: updatedComplemento.name,
+                    category: updatedComplemento.category,
+                    category_name: updatedComplemento.category,
+                    extra_price: updatedComplemento.extra_price,
+                    status: updatedComplemento.status,
+                    description: updatedComplemento.description,
+                    updated_at: new Date().toISOString()
+                };
+            } else {
+                console.error('No se pudo encontrar el complemento a actualizar con ID:', updatedComplemento.id);
+                console.error('IDs disponibles:', this.complementos.map(c => c.id));
+            }
+            
+            this.editingComplemento = null;
+        },
+        clearEditingState() {
+            this.editingComplemento = null;
         },
         numberOnly(event) {
             if (!/[0-9.]/.test(event.key) && !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter'].includes(event.key)) {
                 event.preventDefault();
             }
         },
-        xls() {
-            console.log('Exportando a Excel');
-        }
+        xls: function () {
+            this.loading.isActive = true;
+            
+            setTimeout(() => {
+                try {
+                    const headers = ['ID', 'Name', 'Category', 'Extra Price', 'Status', 'Description'];
+                    const csvContent = [
+                        headers.join(','),
+                        ...this.complementos.map(complemento => [
+                            complemento.id,
+                            `"${complemento.name}"`,
+                            `"${complemento.category_name || complemento.category}"`,
+                            complemento.extra_price,
+                            complemento.status === 5 ? 'Active' : 'Inactive',
+                            `"${complemento.description || ''}"`
+                        ].join(','))
+                    ].join('\n');
+
+                    const blob = new Blob([csvContent], {
+                        type: "text/csv;charset=utf-8;",
+                    });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = this.$t("menu.complementos") + ".csv";
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+
+                    this.loading.isActive = false;
+                    this.$toast.success('¡Complementos exportados exitosamente!');
+                } catch (err) {
+                    this.loading.isActive = false;
+                    this.$toast.error('Error al exportar complementos');
+                }
+            }, 1000);
+        },
+        sampleFile() {
+            console.log('Descargando archivo de muestra para complementos');
+            // Por ahora solo mostramos un mensaje
+            this.$toast.info('Archivo de muestra para complementos en desarrollo');
+        },
+        upload() {
+            console.log('Abriendo modal de importación de complementos');
+            appService.sidebarModalToggle();
+        },
     }
 }
 </script>

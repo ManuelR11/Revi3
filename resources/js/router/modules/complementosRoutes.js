@@ -1,6 +1,6 @@
 import ComplementosComponent from "../../components/admin/complementos/ComplementosComponent.vue";
 import ComplementosListComponent from "../../components/admin/complementos/ComplementosListComponent.vue";
-import ComplementosShowComponent from "../../components/admin/complementos/ComplementosShowComponent.vue";
+import ComplementoShowComponent from "../../components/admin/complementos/ComplementoShowComponent.vue";
 
 export default [
     {
@@ -28,8 +28,8 @@ export default [
             },
             {
                 path: "show/:id",
-                component: ComplementosShowComponent,
-                name: "admin.complementos.show",
+                component: ComplementoShowComponent,
+                name: "admin.complemento.show",
                 meta: {
                     isFrontend: false,
                     auth: true,

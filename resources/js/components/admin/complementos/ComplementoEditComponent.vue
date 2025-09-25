@@ -1,34 +1,33 @@
 <template>
     <LoadingComponent :props="loading" />
-    <SmSidebarModalCreateComponent :props="addButton" @click="addReset" />
 
     <div id="sidebar" class="drawer">
         <div class="drawer-header">
-            <h3 class="drawer-title">{{ $t("menu.complementos") }}</h3>
+            <h3 class="drawer-title">{{ $t("label.edit") }} {{ $t("menu.complementos") }}</h3>
             <button class="fa-solid fa-xmark close-btn" @click="closeModal"></button>
         </div>
         <div class="drawer-body">
             <form @submit.prevent="save">
                 <div class="form-row">
                     <div class="form-col-12 sm:form-col-6">
-                        <label for="name" class="db-field-title required">{{ $t("label.name") }}</label>
-                        <input v-model="props.form.name" v-bind:class="errors.name ? 'invalid' : ''" type="text"
-                            id="name" class="db-field-control">
+                        <label for="edit_name" class="db-field-title required">{{ $t("label.name") }}</label>
+                        <input v-model="form.name" v-bind:class="errors.name ? 'invalid' : ''" type="text"
+                            id="edit_name" class="db-field-control">
                         <small class="db-field-alert" v-if="errors.name">{{ errors.name }}</small>
                     </div>
 
                     <div class="form-col-12 sm:form-col-6">
-                        <label for="extra_price" class="db-field-title required">{{ $t("label.extra_price") }}</label>
-                        <input v-model="props.form.extra_price" v-bind:class="errors.extra_price ? 'invalid' : ''" 
-                            type="text" id="extra_price" class="db-field-control" @keypress="numberOnly">
+                        <label for="edit_extra_price" class="db-field-title required">{{ $t("label.extra_price") }}</label>
+                        <input v-model="form.extra_price" v-bind:class="errors.extra_price ? 'invalid' : ''" 
+                            type="text" id="edit_extra_price" class="db-field-control" @keypress="numberOnly">
                         <small class="db-field-alert" v-if="errors.extra_price">{{ errors.extra_price }}</small>
                     </div>
 
                     <div class="form-col-12 sm:form-col-6">
-                        <label for="category" class="db-field-title required">{{ $t("label.category") }}</label>
-                        <vue-select class="db-field-control f-b-custom-select" id="category"
+                        <label for="edit_category" class="db-field-title required">{{ $t("label.category") }}</label>
+                        <vue-select class="db-field-control f-b-custom-select" id="edit_category"
                             v-bind:class="errors.category ? 'invalid' : ''"
-                            v-model="props.form.category" :options="complementoCategories" label-by="name"
+                            v-model="form.category" :options="complementoCategories" label-by="name"
                             value-by="name" :closeOnSelect="true" :searchable="true" :clearOnClose="true" placeholder="--"
                             search-placeholder="--" />
                         <small class="db-field-alert" v-if="errors.category">{{ errors.category }}</small>
@@ -39,27 +38,27 @@
                         <div class="db-field-radio-group">
                             <div class="db-field-radio">
                                 <div class="custom-radio">
-                                    <input type="radio" v-model="props.form.status" :id="'active_' + modalId"
-                                        :value="enums.statusEnum.ACTIVE" class="custom-radio-field" name="status">
+                                    <input type="radio" v-model="form.status" id="edit_active"
+                                        :value="enums.statusEnum.ACTIVE" class="custom-radio-field">
                                     <span class="custom-radio-span"></span>
                                 </div>
-                                <label :for="'active_' + modalId" class="db-field-label">{{ $t('label.active') }}</label>
+                                <label for="edit_active" class="db-field-label">{{ $t('label.active') }}</label>
                             </div>
                             <div class="db-field-radio">
                                 <div class="custom-radio">
-                                    <input type="radio" class="custom-radio-field" v-model="props.form.status"
-                                        :id="'inactive_' + modalId" :value="enums.statusEnum.INACTIVE" name="status">
+                                    <input type="radio" class="custom-radio-field" v-model="form.status"
+                                        id="edit_inactive" :value="enums.statusEnum.INACTIVE">
                                     <span class="custom-radio-span"></span>
                                 </div>
-                                <label :for="'inactive_' + modalId" class="db-field-label">{{ $t('label.inactive') }}</label>
+                                <label for="edit_inactive" class="db-field-label">{{ $t('label.inactive') }}</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-col-12">
-                        <label for="description" class="db-field-title">{{ $t("label.description") }}</label>
-                        <textarea v-model="props.form.description" v-bind:class="errors.description ? 'invalid' : ''"
-                            id="description" rows="3" class="db-field-control" 
+                        <label for="edit_description" class="db-field-title">{{ $t("label.description") }}</label>
+                        <textarea v-model="form.description" v-bind:class="errors.description ? 'invalid' : ''"
+                            id="edit_description" rows="3" class="db-field-control" 
                             placeholder="Describe las características de este complemento..."></textarea>
                         <small class="db-field-alert" v-if="errors.description">{{ errors.description }}</small>
                     </div>
@@ -84,16 +83,14 @@
 
 <script>
 import LoadingComponent from "../components/LoadingComponent";
-import SmSidebarModalCreateComponent from "../components/buttons/SmSidebarModalCreateComponent";
 import appService from "../../../services/appService";
 
 export default {
-    name: "ComplementoCreateComponent",
+    name: "ComplementoEditComponent",
     components: {
-        LoadingComponent,
-        SmSidebarModalCreateComponent
+        LoadingComponent
     },
-    props: ['props', 'editingComplemento'],
+    props: ['complemento'],
     data() {
         return {
             loading: {
@@ -102,39 +99,28 @@ export default {
             enums: {
                 statusEnum: { ACTIVE: 5, INACTIVE: 10 }
             },
-            addButton: {
-                title: this.$t('label.add_complements')
+            form: {
+                id: null,
+                name: '',
+                extra_price: '',
+                category: 'Obligatorio',
+                status: 5,
+                description: ''
             },
             complementoCategories: [
                 { id: 1, name: 'Obligatorio' },
                 { id: 2, name: 'Opcional' }
             ],
-            errors: {},
-            modalId: 'modal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+            errors: {}
         }
     },
-    mounted() {
-        this.reset();
-    },
     watch: {
-        editingComplemento: {
-            handler(newVal) {
-                if (newVal) {
-                    console.log('Modo edición activado, forzando actualización del status:', newVal.status);
-                    // Forzar la actualización del status
-                    this.$nextTick(() => {
-                        this.props.form.status = parseInt(newVal.status);
-                    });
-                } else {
-                    console.log('Modo creación activado');
-                }
-            },
+        complemento: {
             immediate: true,
-            deep: true
-        },
-        'props.form.status': {
-            handler(newVal) {
-                console.log('Status cambió a:', newVal);
+            handler(newComplemento) {
+                if (newComplemento) {
+                    this.loadComplemento(newComplemento);
+                }
             }
         }
     },
@@ -144,28 +130,32 @@ export default {
                 event.preventDefault();
             }
         },
-        reset() {
-            // Limpiar errores primero
+        loadComplemento(complemento) {
+            console.log('Cargando complemento para editar:', complemento);
+            this.form = {
+                id: complemento.id,
+                name: complemento.name || '',
+                extra_price: complemento.extra_price ? complemento.extra_price.toString() : '0',
+                category: complemento.category_name || complemento.category || 'Obligatorio',
+                status: complemento.status === 'Activo' || complemento.status === 5 ? this.enums.statusEnum.ACTIVE : this.enums.statusEnum.INACTIVE,
+                description: complemento.description || ''
+            };
             this.errors = {};
-            
-            // Resetear form con $nextTick para asegurar reactividad
-            this.$nextTick(() => {
-                this.props.form.name = '';
-                this.props.form.extra_price = '';
-                this.props.form.category = 'Obligatorio';
-                this.props.form.status = this.enums.statusEnum.ACTIVE;
-                this.props.form.description = '';
-                console.log('Form reseteado, status:', this.props.form.status);
-            });
+            console.log('Form actualizado:', this.form);
         },
-        addReset() {
-            this.reset();
-            // Notificar al componente padre que estamos en modo creación
-            this.$emit('clear-editing-state');
+        reset() {
+            this.form = {
+                id: null,
+                name: '',
+                extra_price: '',
+                category: 'Obligatorio',
+                status: this.enums.statusEnum.ACTIVE,
+                description: ''
+            };
+            this.errors = {};
         },
         closeModal() {
             this.reset();
-            // Cerrar modal usando el appService
             appService.sideDrawerHide();
         },
         save() {
@@ -173,15 +163,15 @@ export default {
             this.errors = {};
             let hasErrors = false;
 
-            if (!this.props.form.name) {
+            if (!this.form.name) {
                 this.errors.name = 'El nombre es requerido';
                 hasErrors = true;
             }
-            if (!this.props.form.extra_price && this.props.form.extra_price !== 0) {
+            if (!this.form.extra_price && this.form.extra_price !== 0) {
                 this.errors.extra_price = 'El precio extra es requerido';
                 hasErrors = true;
             }
-            if (!this.props.form.category) {
+            if (!this.form.category) {
                 this.errors.category = 'La categoría es requerida';
                 hasErrors = true;
             }
@@ -196,27 +186,19 @@ export default {
             setTimeout(() => {
                 this.loading.isActive = false;
                 
-                const complementoData = {
-                    name: this.props.form.name,
-                    category: this.props.form.category,
-                    extra_price: parseFloat(this.props.form.extra_price) || 0,
-                    status: parseInt(this.props.form.status),
-                    description: this.props.form.description || ''
-                };
-                
-                console.log('Datos a guardar:', complementoData);
-
-                // Verificar si estamos editando o creando
-                if (this.editingComplemento) {
-                    // Modo edición - incluir el ID del complemento que se está editando
-                    complementoData.id = this.editingComplemento.id;
-                    this.$emit('complemento-updated', complementoData);
-                } else {
-                    // Modo creación
-                    this.$emit('complemento-created', complementoData);
-                }
+                // Emitir evento con los datos actualizados del complemento
+                this.$emit('complemento-updated', {
+                    id: this.form.id,
+                    name: this.form.name,
+                    category: this.form.category,
+                    extra_price: parseFloat(this.form.extra_price) || 0,
+                    status: this.form.status,
+                    description: this.form.description || ''
+                });
                 
                 this.reset();
+                
+                // Cerrar modal usando el appService
                 appService.sideDrawerHide();
             }, 1000);
         }
