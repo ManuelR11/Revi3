@@ -70,7 +70,7 @@ export default {
         save: function () {
             try {
                 if (!this.file) {
-                    alertService.error('Por favor selecciona un archivo');
+                    alertService.error(this.$t('message.error_file_required'));
                     return;
                 }
 

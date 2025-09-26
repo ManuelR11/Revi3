@@ -118,10 +118,14 @@ export default {
                 })
                 .catch((error) => {
                     this.loading.isActive = false;
-                    if (error.response && error.response.data && error.response.data.errors) {
-                        this.errors = error.response.data.errors;
-                    } else {
-                        alertService.error(error.response?.data?.message || this.$t('error_saving_complement_category'));
+                    
+                    // Solo manejar errores que NO sean de autenticación
+                    if (!error.response || (error.response.status !== 401 && error.response.status !== 403)) {
+                        if (error.response && error.response.data && error.response.data.errors) {
+                            this.errors = error.response.data.errors;
+                        } else {
+                            alertService.error(error.response?.data?.message || this.$t('message.error_saving_complement_category'));
+                        }
                     }
                 });
         }

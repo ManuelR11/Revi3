@@ -782,6 +782,15 @@
 		"error_loading_complements": "Error al cargar los complementos.",
 		"error_creating_complement": "Error al crear el complemento.",
 		"error_updating_complement": "Error al actualizar el complemento.",
-		"error_deleting_complement": "Error al eliminar el complemento."
+		"error_deleting_complement": "Error al eliminar el complemento.",
+		"error_exporting_complements": "Error al exportar complementos.",
+		"error_downloading_sample": "Error al descargar el archivo de muestra.",
+		"error_file_required": "Por favor selecciona un archivo.",
+		"error_loading_categories": "Error al cargar las categorías.",
+		"error_loading_category": "Error al cargar la categoría.",
+		"error_deleting_complement_category": "Error al eliminar la categoría de complemento.",
+		"error_saving_complement_category": "Error al guardar la categoría de complemento.",
+		"success_exporting_complements": "Complementos exportados exitosamente.",
+		"success_downloading_sample": "Archivo de muestra descargado correctamente."
 	}
 }

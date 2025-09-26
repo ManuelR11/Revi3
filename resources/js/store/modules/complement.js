@@ -57,15 +57,16 @@ export const complement = {
                     context.commit('pagination', response.data);
                     resolve(response);
                 }).catch((error) => {
-                    console.error('Error fetching complements:', error);
+                    // Solo mostrar errores que no sean de autenticación
+                    if (error.response && error.response.status !== 401 && error.response.status !== 403) {
+                        console.error('Error fetching complements:', error);
+                    }
                     reject(error);
                 });
             });
         },
         save: function (context, payload) {
             return new Promise((resolve, reject) => {
-                console.log('Guardando complement con datos:', payload);
-                
                 const data = {
                     name: payload.name,
                     description: payload.description || '',
@@ -74,10 +75,7 @@ export const complement = {
                     categories: payload.categories || []
                 };
                 
-                console.log('Datos preparados para API:', data);
-                
                 axios.post('admin/complement', data).then((response) => {
-                    console.log('Respuesta del servidor:', response.data);
                     context.commit('temp', {
                         name: "",
                         description: "",
@@ -87,10 +85,13 @@ export const complement = {
                     });
                     resolve(response);
                 }).catch((error) => {
-                    console.error('Error guardando complement:', error);
-                    if (error.response) {
-                        console.error('Datos de respuesta del error:', error.response.data);
-                        console.error('Status del error:', error.response.status);
+                    // Solo mostrar errores que no sean de autenticación
+                    if (!error.response || (error.response.status !== 401 && error.response.status !== 403)) {
+                        console.error('Error guardando complement:', error);
+                        if (error.response) {
+                            console.error('Datos de respuesta del error:', error.response.data);
+                            console.error('Status del error:', error.response.status);
+                        }
                     }
                     reject(error);
                 });
@@ -98,8 +99,6 @@ export const complement = {
         },
         edit: function (context, payload) {
             return new Promise((resolve, reject) => {
-                console.log('Editando complement con datos:', payload);
-                
                 const data = {
                     name: payload.name,
                     description: payload.description || '',
@@ -112,10 +111,7 @@ export const complement = {
                     data.categories = payload.categories;
                 }
                 
-                console.log('Datos preparados para edición:', data);
-                
                 axios.put(`admin/complement/${payload.id}`, data).then((response) => {
-                    console.log('Respuesta del servidor (edición):', response.data);
                     context.commit('temp', {
                         name: "",
                         description: "",
@@ -125,10 +121,13 @@ export const complement = {
                     });
                     resolve(response);
                 }).catch((error) => {
-                    console.error('Error editando complement:', error);
-                    if (error.response) {
-                        console.error('Datos de respuesta del error:', error.response.data);
-                        console.error('Status del error:', error.response.status);
+                    // Solo mostrar errores que no sean de autenticación
+                    if (!error.response || (error.response.status !== 401 && error.response.status !== 403)) {
+                        console.error('Error editando complement:', error);
+                        if (error.response) {
+                            console.error('Datos de respuesta del error:', error.response.data);
+                            console.error('Status del error:', error.response.status);
+                        }
                     }
                     reject(error);
                 });
@@ -139,7 +138,10 @@ export const complement = {
                 axios.delete(`admin/complement/${payload}`).then((response) => {
                     resolve(response);
                 }).catch((error) => {
-                    console.error('Error eliminando complement:', error);
+                    // Solo mostrar errores que no sean de autenticación
+                    if (!error.response || (error.response.status !== 401 && error.response.status !== 403)) {
+                        console.error('Error eliminando complement:', error);
+                    }
                     reject(error);
                 });
             });
@@ -150,7 +152,10 @@ export const complement = {
                     context.commit('show', response.data.data);
                     resolve(response);
                 }).catch((error) => {
-                    console.error('Error obteniendo complement:', error);
+                    // Solo mostrar errores que no sean de autenticación
+                    if (!error.response || (error.response.status !== 401 && error.response.status !== 403)) {
+                        console.error('Error obteniendo complement:', error);
+                    }
                     reject(error);
                 });
             });

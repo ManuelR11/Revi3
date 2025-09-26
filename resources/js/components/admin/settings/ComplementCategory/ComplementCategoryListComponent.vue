@@ -176,8 +176,12 @@ export default {
                 this.loading.isActive = false;
             }).catch((err) => {
                 this.loading.isActive = false;
-                console.error('List error:', err);
-                alertService.error(err.response?.data?.message || 'Error al cargar las categorías');
+                
+                // Solo mostrar alertas y logs para errores que NO sean de autenticación
+                if (!err.response || (err.response.status !== 401 && err.response.status !== 403)) {
+                    console.error('List error:', err);
+                    alertService.error(err.response?.data?.message || this.$t('message.error_loading_categories'));
+                }
             });
         },
 
@@ -200,10 +204,7 @@ export default {
             };
             
             // Cerrar el modal
-            appService.modalHide("#complementCategoryModal");
-            
-            // Mostrar notificación de éxito
-            alertService.success(this.$t('complement_category_saved_successfully'));
+            appService.modalHide("#complementCategoryModal");            
         },
         destroy: function (id) {
             appService.destroyConfirmation().then((res) => {
@@ -211,12 +212,16 @@ export default {
                 this.$store.dispatch('categoryComplement/destroy', id)
                     .then(() => {
                         this.loading.isActive = false;
-                        alertService.successFlip(null, this.$t('complement_category'));
+                        alertService.successFlip(null, this.$t('label.complement_category'));
                         this.list(); // Recargar la lista
                     })
                     .catch((error) => {
                         this.loading.isActive = false;
-                        alertService.error(error.response?.data?.message || this.$t('error_deleting_complement_category'));
+                        
+                        // Solo mostrar alertas para errores que NO sean de autenticación
+                        if (!error.response || (error.response.status !== 401 && error.response.status !== 403)) {
+                            alertService.error(error.response?.data?.message || this.$t('error_deleting_complement_category'));
+                        }
                     });
             }).catch((err) => {
                 this.loading.isActive = false;
@@ -224,7 +229,6 @@ export default {
         },
         sortCategory: function () {
             console.log('Ordenando categorías de complementos');
-            // Por ahora solo un log, luego implementar con API
         },
         xls: function () {
             this.loading.isActive = true;

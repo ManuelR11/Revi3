@@ -778,6 +778,15 @@
         "error_loading_complements": "Error loading complements.",
         "error_creating_complement": "Error creating complement.",
         "error_updating_complement": "Error updating complement.",
-        "error_deleting_complement": "Error deleting complement."
+        "error_deleting_complement": "Error deleting complement.",
+        "error_exporting_complements": "Error exporting complements.",
+        "error_downloading_sample": "Error downloading sample file.",
+        "error_file_required": "Please select a file.",
+        "error_loading_categories": "Error loading categories.",
+        "error_loading_category": "Error loading category.",
+        "error_deleting_complement_category": "Error deleting complement category.",
+        "error_saving_complement_category": "Error saving complement category.",
+        "success_exporting_complements": "Complements exported successfully.",
+        "success_downloading_sample": "Sample file downloaded successfully."
     }
 }

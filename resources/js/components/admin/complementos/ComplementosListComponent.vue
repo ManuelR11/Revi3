@@ -265,11 +265,13 @@ export default {
 
             this.$store.dispatch('complement/lists', searchData).then((response) => {
                 this.loading.isActive = false;
-                console.log('Complementos cargados:', response.data);
             }).catch((error) => {
                 this.loading.isActive = false;
-                console.error('Error cargando complementos:', error);
-                alertService.error(this.$t('message.error_loading_complements'));
+                
+                if (!error.response || (error.response.status !== 401 && error.response.status !== 403)) {
+                    console.error('Error cargando complementos:', error);
+                    alertService.error(this.$t('message.error_loading_complements'));
+                }
             });
         },
         handleSlide: function (id) {
@@ -327,7 +329,7 @@ export default {
 
                 } catch (err) {
                     this.loading.isActive = false;
-                    alertService.error('Error al eliminar el complemento');
+                    alertService.error(this.$t('message.error_deleting_complement'));
                 }
             }).catch((err) => {
                 this.loading.isActive = false;
@@ -379,10 +381,10 @@ export default {
                     URL.revokeObjectURL(link.href);
 
                     this.loading.isActive = false;
-                    alertService.success('Complementos exportados exitosamente');
+                    alertService.success(this.$t('message.success_exporting_complements'));
                 } catch (err) {
                     this.loading.isActive = false;
-                    alertService.error('Error al exportar complementos');
+                    alertService.error(this.$t('message.error_exporting_complements'));
                 }
             }, 1000);
         },
@@ -411,9 +413,9 @@ export default {
                 link.click();
                 URL.revokeObjectURL(link.href);
 
-                alertService.success('Archivo de muestra descargado correctamente');
+                alertService.success(this.$t('message.success_downloading_sample'));
             } catch (err) {
-                alertService.error('Error al descargar el archivo de muestra');
+                alertService.error(this.$t('message.error_downloading_sample'));
             }
         },
         upload() {

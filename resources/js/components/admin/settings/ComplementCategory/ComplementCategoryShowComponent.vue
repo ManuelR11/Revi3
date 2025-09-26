@@ -67,11 +67,15 @@ export default {
             })
             .catch((error) => {
                 this.loading.isActive = false;
-                alertService.error(error.response?.data?.message || 'Error al cargar la categoría');
+                
+                // Solo manejar errores que NO sean de autenticación
+                if (!error.response || (error.response.status !== 401 && error.response.status !== 403)) {
+                    alertService.error(error.response?.data?.message || this.$t('message.error_loading_category'));
+                }
             });
     },
     methods: {
-        // Los métodos se pueden agregar aquí si son necesarios
+        // Métodos
     }
 }
 </script>

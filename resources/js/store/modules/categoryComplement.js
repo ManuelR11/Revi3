@@ -57,7 +57,10 @@ export const categoryComplement = {
                     
                     resolve(res);
                 }).catch((err) => {
-                    reject(err);
+                    // Solo rechazar errores que NO sean de autenticación
+                    if (!err.response || (err.response.status !== 401 && err.response.status !== 403)) {
+                        reject(err);
+                    }
                 });
             });
         },
@@ -75,7 +78,10 @@ export const categoryComplement = {
                 method(url, payload).then(res => {
                     resolve(res);
                 }).catch((err) => {
-                    reject(err);
+                    // Solo rechazar errores que NO sean de autenticación
+                    if (!err.response || (err.response.status !== 401 && err.response.status !== 403)) {
+                        reject(err);
+                    }
                 });
             });
         },
@@ -88,7 +94,10 @@ export const categoryComplement = {
                     context.dispatch('lists', payload.search).then().catch();
                     resolve(res);
                 }).catch((err) => {
-                    reject(err);
+                    // Solo rechazar errores que NO sean de autenticación
+                    if (!err.response || (err.response.status !== 401 && err.response.status !== 403)) {
+                        reject(err);
+                    }
                 });
             });
         },
@@ -99,7 +108,10 @@ export const categoryComplement = {
                     context.commit('show', res.data.data);
                     resolve(res);
                 }).catch((err) => {
-                    reject(err);
+                    // Solo rechazar errores que NO sean de autenticación
+                    if (!err.response || (err.response.status !== 401 && err.response.status !== 403)) {
+                        reject(err);
+                    }
                 });
             });
         },
