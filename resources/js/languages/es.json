@@ -151,6 +151,7 @@
 		"start_date": "Fecha de Inicio",
 		"end_date": "Fecha de Fin",
 		"category": "Categoría",
+		"categories": "Categorías",
 		"complement_category": "Categoría de Complemento",
 		"offer": "Oferta",
 		"items": "Productos",
@@ -719,7 +720,9 @@
 		"pagination_label": "Mostrando de {from} a {to} de {total} entradas",
 		"name_field_required": "El campo nombre es obligatorio.",
 		"extra_price_field_required": "El campo precio extra es obligatorio.",
+		"price_field_required": "El campo precio es obligatorio.",
 		"category_field_required": "El campo categoría es obligatorio.",
+		"categories_field_required": "El campo categorías es obligatorio.",
 		"password_update": "Contraseña actualizada con éxito.",
 		"photo_update": "Foto actualizada con éxito.",
 		"image_upload": "Imagen subida con éxito.",
@@ -775,6 +778,10 @@
 		"available": "Disponible",
 		"unavailable": "No Disponible",
 		"payment_method": "El método de pago es obligatorio.",
-		"special_instructions_limit": "El límite para instrucciones especiales es de 190 caracteres."
+		"special_instructions_limit": "El límite para instrucciones especiales es de 190 caracteres.",
+		"error_loading_complements": "Error al cargar los complementos.",
+		"error_creating_complement": "Error al crear el complemento.",
+		"error_updating_complement": "Error al actualizar el complemento.",
+		"error_deleting_complement": "Error al eliminar el complemento."
 	}
 }

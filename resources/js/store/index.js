@@ -5,6 +5,7 @@ import { auth } from "./modules/auth";
 import { company } from "./modules/company";
 import { itemCategory } from "./modules/itemCategory";
 import { categoryComplement } from "./modules/categoryComplement";
+import { complement } from "./modules/complement";
 import { itemAttribute } from "./modules/itemAttribute";
 import { branch } from "./modules/branch";
 import { offer } from "./modules/offer";
@@ -84,6 +85,7 @@ export default new createStore({
         company,
         itemCategory,
         categoryComplement,
+        complement,
         itemAttribute,
         branch,
         offer,

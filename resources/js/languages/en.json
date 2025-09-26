@@ -150,6 +150,7 @@
         "start_date": "Start Date",
         "end_date": "End Date",
         "category": "Category",
+        "categories": "Categories",
         "complement_category": "Complement Category",
         "offer": "Offer",
         "items": "Items",
@@ -718,7 +719,9 @@
         "pagination_label": "Showing {from} to {to} of {total} entries",
         "name_field_required": "The name field is required.",
         "extra_price_field_required": "The extra price field is required.",
+        "price_field_required": "The price field is required.",
         "category_field_required": "The category field is required.",
+        "categories_field_required": "The categories field is required.",
         "password_update": "Password Updated Successfully.",
         "photo_update": "Photo Updated Successfully.",
         "image_upload": "Image Upload Successfully.",
@@ -771,6 +774,10 @@
         "no_items_found": "No items matched your search! Try different keywords.",
         "no_data_available": "No data available.",
         "payment_method": "The payment method is required.",
-        "special_instructions_limit": "Special instructions limit is 190 characters."
+        "special_instructions_limit": "Special instructions limit is 190 characters.",
+        "error_loading_complements": "Error loading complements.",
+        "error_creating_complement": "Error creating complement.",
+        "error_updating_complement": "Error updating complement.",
+        "error_deleting_complement": "Error deleting complement."
     }
 }

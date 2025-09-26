@@ -40,7 +40,7 @@
                             <label for="price" class="db-field-title after:hidden">{{
                                 $t("label.extra_price")
                             }}</label>
-                            <input id="price" v-on:keypress="numberOnly($event)" v-model="props.search.extra_price"
+                            <input id="price" v-on:keypress="numberOnly($event)" v-model="props.search.price"
                                 type="text" class="db-field-control" />
                         </div>
                         <div class="col-12 sm:col-6 md:col-4 xl:col-3">
@@ -101,12 +101,18 @@
                                 </div>
                             </td>
                             <td class="db-table-body-td">
-                                <span class="db-table-badge text-[10px] text-white bg-primary capitalize">
-                                    {{ complemento.category_name }}
+                                <span v-if="complemento.categories && complemento.categories.length > 0">
+                                    <span v-for="(category, index) in complemento.categories" :key="category.id" 
+                                          class="db-table-badge text-[10px] text-white bg-primary capitalize mr-1">
+                                        {{ category.name }}
+                                    </span>
+                                </span>
+                                <span v-else class="db-table-badge text-[10px] text-gray-500 bg-gray-100 capitalize">
+                                    Sin categoría
                                 </span>
                             </td>
                             <td class="db-table-body-td">
-                                <span class="font-medium text-primary">${{ parseFloat(complemento.extra_price || 0).toFixed(2) }}</span>
+                                <span class="font-medium text-primary">${{ parseFloat(complemento.price || 0).toFixed(2) }}</span>
                             </td>
                             <td class="db-table-body-td">
                                 <span :class="statusClass(complemento.status)">{{ enums.statusEnumArray[complemento.status] }}</span>
@@ -195,30 +201,20 @@ export default {
                     order_column: 'id',
                     order_type: 'desc',
                     name: '',
-                    extra_price: '',
+                    price: '',
                     complemento_category_id: null,
                     status: null
                 },
                 form: {
                     name: '',
-                    extra_price: '',
-                    category: 'Obligatorio',
+                    price: '',
+                    categories: [],
                     status: 5,
                     description: ''
                 },
                 errors: {}
             },
-            complementos: [],
-            complementoCategories: [
-                { id: 1, name: 'Obligatorio', description: 'Complementos que vienen incluidos por defecto' },
-                { id: 2, name: 'Opcional', description: 'Complementos que el cliente puede agregar por un costo extra' }
-            ],
-            pagination: {
-                current_page: 1,
-                per_page: 10,
-                total: 0,
-                last_page: 1
-            },
+
             paginationPage: 1,
             printObj: {
                 id: "print",
@@ -227,8 +223,21 @@ export default {
             editingComplemento: null
         }
     },
+    computed: {
+        complementoCategories: function() {
+            return this.$store.getters['categoryComplement/lists'] || [];
+        },
+        complementos() {
+            return this.$store.getters['complement/lists'];
+        },
+        pagination() {
+            return this.$store.getters['complement/pagination'];
+        }
+    },
     mounted() {
         this.list();
+        // Cargar las categorías de complementos
+        this.$store.dispatch('categoryComplement/lists', {});
     },
     methods: {
         permissionChecker(permission) {
@@ -238,41 +247,30 @@ export default {
             return status === 5 ? 'text-[10px] text-green-700 bg-green-100 px-2 py-1 rounded capitalize' 
                                 : 'text-[10px] text-red-700 bg-red-100 px-2 py-1 rounded capitalize';
         },
+
         list() {
             this.loading.isActive = true;
-            setTimeout(() => {
-                this.complementos = [
-                    {
-                        id: 1,
-                        name: 'Salsa BBQ',
-                        category_name: 'Obligatorio',
-                        extra_price: 0.00,
-                        status: 5,
-                        image: null,
-                        description: 'Deliciosa salsa BBQ casera'
-                    },
-                    {
-                        id: 2,
-                        name: 'Queso Cheddar Extra',
-                        category_name: 'Opcional',
-                        extra_price: 3.00,
-                        status: 5,
-                        image: null,
-                        description: 'Queso cheddar premium adicional'
-                    },
-                    {
-                        id: 3,
-                        name: 'Pollo Extra',
-                        category_name: 'Opcional',
-                        extra_price: 5.00,
-                        status: 5,
-                        image: null,
-                        description: 'Porción adicional de pollo a la parrilla'
-                    }
-                ];
-                this.pagination.total = this.complementos.length;
+
+            const searchData = {
+                page: this.paginationPage,
+                name: this.props.search.name,
+                status: this.props.search.status,
+                category_id: this.props.search.complemento_category_id
+            };
+
+            // Agregar price a la búsqueda si está presente
+            if (this.props.search.price) {
+                searchData.price = this.props.search.price;
+            }
+
+            this.$store.dispatch('complement/lists', searchData).then((response) => {
                 this.loading.isActive = false;
-            }, 500);
+                console.log('Complementos cargados:', response.data);
+            }).catch((error) => {
+                this.loading.isActive = false;
+                console.error('Error cargando complementos:', error);
+                alertService.error(this.$t('message.error_loading_complements'));
+            });
         },
         handleSlide: function (id) {
             return appService.handleSlide(id);
@@ -288,7 +286,7 @@ export default {
                 order_column: 'id',
                 order_type: 'desc',
                 name: '',
-                extra_price: '',
+                price: '',
                 complemento_category_id: null,
                 status: null
             };
@@ -299,12 +297,14 @@ export default {
             appService.sideDrawerShow();
             this.loading.isActive = true;
             this.props.errors = {};            
-            const categoryValue = complemento.category_name || complemento.category || 'Obligatorio';
+            
+            // Extraer IDs de categorías del complemento
+            const categoryIds = complemento.categories ? complemento.categories.map(cat => cat.id) : [];
             
             this.props.form = {
                 name: complemento.name,
-                extra_price: complemento.extra_price.toString(),
-                category: categoryValue,
+                price: complemento.price.toString(),
+                categories: categoryIds,
                 status: complemento.status,
                 description: complemento.description || ''
             };
@@ -315,17 +315,15 @@ export default {
                 try {
                     this.loading.isActive = true;
                     
-                    setTimeout(() => {
-                        const index = this.complementos.findIndex(c => c.id === id);
-                        if (index !== -1) {
-                            const complementoName = this.complementos[index].name;
-                            this.complementos.splice(index, 1);
-                            alertService.successFlip(2, this.$t('menu.complementos'));
-                        } else {
-                            alertService.error('No se pudo encontrar el complemento a eliminar');
-                        }
+                    this.$store.dispatch('complement/destroy', id).then((response) => {
                         this.loading.isActive = false;
-                    }, 1000);
+                        alertService.successFlip(2, this.$t('menu.complementos'));
+                        this.list(); // Recargar la lista
+                    }).catch((error) => {
+                        this.loading.isActive = false;
+                        console.error('Error eliminando complemento:', error);
+                        alertService.error(this.$t('message.error_deleting_complement'));
+                    });
 
                 } catch (err) {
                     this.loading.isActive = false;
@@ -336,40 +334,14 @@ export default {
             });
         },
         addComplementoToList(newComplemento) {
-            this.complementos.unshift({
-                id: Date.now(),
-                name: newComplemento.name,
-                category: newComplemento.category,
-                category_name: newComplemento.category,
-                extra_price: newComplemento.extra_price,
-                status: newComplemento.status,
-                description: newComplemento.description,
-                created_at: new Date().toISOString()
-            });
-
             alertService.successFlip(0, this.$t('menu.complementos'));
             this.editingComplemento = null;
+            this.list(); // Recargar la lista desde la API
         },
         updateComplementoInList(updatedComplemento) {
-            const index = this.complementos.findIndex(c => c.id === updatedComplemento.id);
-
-            if (index !== -1) {
-                this.complementos[index] = {
-                    ...this.complementos[index],
-                    name: updatedComplemento.name,
-                    category: updatedComplemento.category,
-                    category_name: updatedComplemento.category,
-                    extra_price: updatedComplemento.extra_price,
-                    status: updatedComplemento.status,
-                    description: updatedComplemento.description,
-                    updated_at: new Date().toISOString()
-                };
-                alertService.successFlip(1, this.$t('menu.complementos'));
-            } else {
-                alertService.error('No se pudo encontrar el complemento a actualizar');
-            }
-            
+            alertService.successFlip(1, this.$t('menu.complementos'));
             this.editingComplemento = null;
+            this.list(); // Recargar la lista desde la API
         },
         clearEditingState() {
             this.editingComplemento = null;

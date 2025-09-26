@@ -20,15 +20,22 @@
                 </div>
                 <div class="col-12 sm:col-6 !py-1.5">
                     <div class="db-list-item p-0">
-                        <span class="db-list-item-title w-full sm:w-1/2">{{ $t('label.extra_price') }}</span>
-                        <span class="db-list-item-text w-full sm:w-1/2">${{ parseFloat(complemento.extra_price || 0).toFixed(2) }}</span>
+                        <span class="db-list-item-title w-full sm:w-1/2">{{ $t('label.price') }}</span>
+                        <span class="db-list-item-text w-full sm:w-1/2">${{ parseFloat(complemento.price || 0).toFixed(2) }}</span>
                     </div>
                 </div>
 
                 <div class="col-12 sm:col-6 !py-1.5">
                     <div class="db-list-item p-0">
-                        <span class="db-list-item-title w-full sm:w-1/2">{{ $t('label.category') }}</span>
-                        <span class="db-list-item-text w-full sm:w-1/2">{{ complemento.category_name || complemento.category }}</span>
+                        <span class="db-list-item-title w-full sm:w-1/2">{{ $t('label.categories') }}</span>
+                        <span class="db-list-item-text w-full sm:w-1/2">
+                            <span v-if="complemento.categories && complemento.categories.length > 0">
+                                <span v-for="(category, index) in complemento.categories" :key="category.id" class="db-table-badge text-[10px] text-white bg-primary capitalize mr-1">
+                                    {{ category.name }}
+                                </span>
+                            </span>
+                            <span v-else>-</span>
+                        </span>
                     </div>
                 </div>
 
@@ -110,58 +117,23 @@ export default {
             // Obtener ID de la ruta
             const complementoId = this.$route.params.id;
             
-            // Simular carga de datos del complemento
-            setTimeout(() => {
-                // Aquí simularemos buscar el complemento por ID
-                // En un caso real, harías una llamada a la API
-                const complementos = [
-                    {
-                        id: 1,
-                        name: 'Salsa BBQ',
-                        category: 'Obligatorio',
-                        category_name: 'Obligatorio',
-                        extra_price: 0.00,
-                        status: 5,
-                        description: 'Deliciosa salsa BBQ casera'
-                    },
-                    {
-                        id: 2,
-                        name: 'Queso Cheddar Extra',
-                        category: 'Opcional',
-                        category_name: 'Opcional',
-                        extra_price: 3.00,
-                        status: 5,
-                        description: 'Queso cheddar premium adicional'
-                    },
-                    {
-                        id: 3,
-                        name: 'Pollo Extra',
-                        category: 'Opcional',
-                        category_name: 'Opcional',
-                        extra_price: 5.00,
-                        status: 5,
-                        description: 'Porción adicional de pollo a la parrilla'
-                    }
-                ];
-
-                const foundComplemento = complementos.find(c => c.id == complementoId);
-                if (foundComplemento) {
-                    this.complemento = { ...foundComplemento };
-                } else {
-                    // Si no se encuentra, usar datos por defecto
-                    this.complemento = {
-                        id: complementoId,
-                        name: 'Complemento no encontrado',
-                        category: 'N/A',
-                        category_name: 'N/A',
-                        extra_price: 0,
-                        status: 10,
-                        description: 'Este complemento no existe en el sistema'
-                    };
-                }
-                
+            this.$store.dispatch('complement/show', complementoId).then((response) => {
                 this.loading.isActive = false;
-            }, 1000);
+                this.complemento = response.data.data;
+                console.log('Complemento cargado:', this.complemento);
+            }).catch((error) => {
+                this.loading.isActive = false;
+                console.error('Error cargando complemento:', error);
+                // Si no se encuentra, usar datos por defecto
+                this.complemento = {
+                    id: complementoId,
+                    name: 'Complemento no encontrado',
+                    categories: [],
+                    price: 0,
+                    status: 10,
+                    description: 'Este complemento no existe en el sistema'
+                };
+            });
         }
     }
 }

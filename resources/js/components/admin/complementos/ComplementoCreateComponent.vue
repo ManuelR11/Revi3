@@ -18,20 +18,20 @@
                     </div>
 
                     <div class="form-col-12 sm:form-col-6">
-                        <label for="extra_price" class="db-field-title required">{{ $t("label.extra_price") }}</label>
-                        <input v-model="props.form.extra_price" v-bind:class="errors.extra_price ? 'invalid' : ''" 
-                            type="text" id="extra_price" class="db-field-control" @keypress="numberOnly">
-                        <small class="db-field-alert" v-if="errors.extra_price">{{ errors.extra_price }}</small>
+                        <label for="price" class="db-field-title required">{{ $t("label.price") }}</label>
+                        <input v-model="props.form.price" v-bind:class="errors.price ? 'invalid' : ''" 
+                            type="text" id="price" class="db-field-control" @keypress="numberOnly">
+                        <small class="db-field-alert" v-if="errors.price">{{ errors.price }}</small>
                     </div>
 
-                    <div class="form-col-12 sm:form-col-6">
-                        <label for="category" class="db-field-title required">{{ $t("label.category") }}</label>
-                        <vue-select class="db-field-control f-b-custom-select" id="category"
-                            v-bind:class="errors.category ? 'invalid' : ''"
-                            v-model="props.form.category" :options="complementoCategories" label-by="name"
-                            value-by="name" :closeOnSelect="true" :searchable="true" :clearOnClose="true" placeholder="--"
+                    <div class="form-col-12">
+                        <label for="categories" class="db-field-title required">{{ $t("label.categories") }}</label>
+                        <vue-select class="db-field-control f-b-custom-select" id="categories"
+                            v-bind:class="errors.categories ? 'invalid' : ''"
+                            v-model="props.form.categories" :options="complementoCategories" label-by="name"
+                            value-by="id" :multiple="true" :closeOnSelect="false" :searchable="true" :clearOnClose="true" placeholder="--"
                             search-placeholder="--" />
-                        <small class="db-field-alert" v-if="errors.category">{{ errors.category }}</small>
+                        <small class="db-field-alert" v-if="errors.categories">{{ errors.categories }}</small>
                     </div>
 
                     <div class="form-col-12 sm:form-col-6">
@@ -106,16 +106,20 @@ export default {
             addButton: {
                 title: this.$t('label.add_complements')
             },
-            complementoCategories: [
-                { id: 1, name: 'Obligatorio' },
-                { id: 2, name: 'Opcional' }
-            ],
+
             errors: {},
             modalId: 'modal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
         }
     },
+    computed: {
+        complementoCategories: function() {
+            return this.$store.getters['categoryComplement/lists'] || [];
+        }
+    },
     mounted() {
         this.reset();
+        // Cargar las categorías de complementos
+        this.$store.dispatch('categoryComplement/lists', {});
     },
     watch: {
         editingComplemento: {
@@ -152,8 +156,8 @@ export default {
             // Resetear form con $nextTick para asegurar reactividad
             this.$nextTick(() => {
                 this.props.form.name = '';
-                this.props.form.extra_price = '';
-                this.props.form.category = 'Obligatorio';
+                this.props.form.price = '';
+                this.props.form.categories = [];
                 this.props.form.status = this.enums.statusEnum.ACTIVE;
                 this.props.form.description = '';
                 console.log('Form reseteado, status:', this.props.form.status);
@@ -178,12 +182,12 @@ export default {
                 this.errors.name = this.$t('message.name_field_required');
                 hasErrors = true;
             }
-            if (!this.props.form.extra_price && this.props.form.extra_price !== 0) {
-                this.errors.extra_price = this.$t('message.extra_price_field_required');
+            if (!this.props.form.price && this.props.form.price !== 0) {
+                this.errors.price = this.$t('message.price_field_required');
                 hasErrors = true;
             }
-            if (!this.props.form.category) {
-                this.errors.category = this.$t('message.category_field_required');
+            if (!this.props.form.categories || this.props.form.categories.length === 0) {
+                this.errors.categories = this.$t('message.categories_field_required');
                 hasErrors = true;
             }
 
@@ -193,33 +197,54 @@ export default {
 
             this.loading.isActive = true;
             
-            // Simulación de guardado
-            setTimeout(() => {
-                this.loading.isActive = false;
-                
-                const complementoData = {
-                    name: this.props.form.name,
-                    category: this.props.form.category,
-                    extra_price: parseFloat(this.props.form.extra_price) || 0,
-                    status: parseInt(this.props.form.status),
-                    description: this.props.form.description || ''
-                };
-                
-                console.log('Datos a guardar:', complementoData);
+            const complementoData = {
+                name: this.props.form.name,
+                price: parseFloat(this.props.form.price) || 0,
+                status: parseInt(this.props.form.status),
+                description: this.props.form.description || '',
+                categories: this.props.form.categories || []
+            };
+            
+            console.log('Datos a guardar:', complementoData);
 
-                // Verificar si estamos editando o creando
-                if (this.editingComplemento) {
-                    // Modo edición - incluir el ID del complemento que se está editando
-                    complementoData.id = this.editingComplemento.id;
-                    this.$emit('complemento-updated', complementoData);
-                } else {
-                    // Modo creación
-                    this.$emit('complemento-created', complementoData);
-                }
+            // Verificar si estamos editando o creando
+            if (this.editingComplemento) {
+                // Modo edición - incluir el ID del complemento que se está editando
+                complementoData.id = this.editingComplemento.id;
                 
-                this.reset();
-                appService.sideDrawerHide();
-            }, 1000);
+                this.$store.dispatch('complement/edit', complementoData).then((response) => {
+                    this.loading.isActive = false;
+                    console.log('Complemento actualizado:', response.data);
+                    this.$emit('complemento-updated', complementoData);
+                    this.reset();
+                    appService.sideDrawerHide();
+                }).catch((error) => {
+                    this.loading.isActive = false;
+                    console.error('Error actualizando complemento:', error);
+                    if (error.response && error.response.data && error.response.data.errors) {
+                        this.errors = error.response.data.errors;
+                    } else {
+                        alertService.error(this.$t('message.error_updating_complement'));
+                    }
+                });
+            } else {
+                // Modo creación
+                this.$store.dispatch('complement/save', complementoData).then((response) => {
+                    this.loading.isActive = false;
+                    console.log('Complemento creado:', response.data);
+                    this.$emit('complemento-created', complementoData);
+                    this.reset();
+                    appService.sideDrawerHide();
+                }).catch((error) => {
+                    this.loading.isActive = false;
+                    console.error('Error creando complemento:', error);
+                    if (error.response && error.response.data && error.response.data.errors) {
+                        this.errors = error.response.data.errors;
+                    } else {
+                        alertService.error(this.$t('message.error_creating_complement'));
+                    }
+                });
+            }
         }
     }
 }
