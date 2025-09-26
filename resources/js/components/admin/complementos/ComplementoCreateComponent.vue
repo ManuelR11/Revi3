@@ -29,8 +29,8 @@
                         <vue-select class="db-field-control f-b-custom-select" id="categories"
                             v-bind:class="errors.categories ? 'invalid' : ''"
                             v-model="props.form.categories" :options="complementoCategories" label-by="name"
-                            value-by="id" :multiple="true" :closeOnSelect="false" :searchable="true" :clearOnClose="true" placeholder="--"
-                            search-placeholder="--" />
+                            value-by="id" :multiple="true" :closeOnSelect="false" :searchable="true" :clearOnClose="true" :placeholder="$t('label.select_complements_category')" 
+                            :search-placeholder="$t('label.search_complements_category')" />
                         <small class="db-field-alert" v-if="errors.categories">{{ errors.categories }}</small>
                     </div>
 
@@ -60,7 +60,7 @@
                         <label for="description" class="db-field-title">{{ $t("label.description") }}</label>
                         <textarea v-model="props.form.description" v-bind:class="errors.description ? 'invalid' : ''"
                             id="description" rows="3" class="db-field-control" 
-                            placeholder="Describe las características de este complemento..."></textarea>
+                            :placeholder="$t('label.complement_description')"></textarea>
                         <small class="db-field-alert" v-if="errors.description">{{ errors.description }}</small>
                     </div>
 

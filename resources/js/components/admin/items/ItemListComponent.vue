@@ -283,6 +283,7 @@ export default {
                     item_category_id: null,
                     tax_id: null,
                     status: statusEnum.ACTIVE,
+                    complements: [],
                 },
                 search: {
                     paginate: 1,
@@ -312,6 +313,15 @@ export default {
             this.loading.isActive = false;
         });
         this.$store.dispatch('tax/lists', this.taxProps.search).then(res => {
+            this.loading.isActive = false;
+        }).catch((err) => {
+            this.loading.isActive = false;
+        });
+        this.$store.dispatch('complement/lists', {
+            order_column: 'id',
+            order_type: 'asc',
+            status: 1 // Solo complementos activos
+        }).then(res => {
             this.loading.isActive = false;
         }).catch((err) => {
             this.loading.isActive = false;
@@ -394,6 +404,7 @@ export default {
                 tax_id: item.tax_id,
                 item_category_id: item.item_category_id,
                 status: item.status,
+                complements: item.complements || [],
             };
         },
         destroy: function (id) {

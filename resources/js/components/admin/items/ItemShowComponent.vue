@@ -101,6 +101,22 @@
                         </span>
                     </div>
                 </div>
+
+                <div class="col-12 !py-1.5">
+                    <div class="db-list-item p-0">
+                        <span class="db-list-item-text mt-2 w-full">
+                            <span class="mt-2 db-list-item-title">{{ $t('label.complements') }}</span><br>
+                            <span class="mt-2" v-if="item.complements && item.complements.length > 0">
+                                <span v-for="(complement, index) in item.complements" :key="complement.id" 
+                                      class="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded mr-2 mb-1">
+                                    {{ complement.name }}
+                                    <span class="text-xs text-gray-600">(+${{ complement.price }})</span>
+                                </span>
+                            </span>
+                            <span class="mt-2 text-gray-500" v-else>{{ $t('label.no_complements') }}</span>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 

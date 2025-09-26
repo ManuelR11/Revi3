@@ -80,7 +80,7 @@ export default {
                 setTimeout(() => {
                     this.loading.isActive = false;
                     appService.modalHide();
-                    alertService.successFlip(0, "Categorías de Complementos");
+                    alertService.successFlip(0, this.$t("label.complement_category"));
                     
                     this.file = "";
                     this.errors = {};

@@ -3422,6 +3422,9 @@ input:checked + div svg {
 .mr-1 {
   margin-right: 0.25rem;
 }
+.mr-2 {
+  margin-right: 0.5rem;
+}
 .mr-4 {
   margin-right: 1rem;
 }
@@ -3460,6 +3463,9 @@ input:checked + div svg {
 }
 .block {
   display: block;
+}
+.inline-block {
+  display: inline-block;
 }
 .\!flex {
   display: flex !important;
@@ -4721,9 +4727,17 @@ input:checked + div svg {
   --tw-text-opacity: 1;
   color: rgb(59 130 246 / var(--tw-text-opacity, 1));
 }
+.text-blue-800 {
+  --tw-text-opacity: 1;
+  color: rgb(30 64 175 / var(--tw-text-opacity, 1));
+}
 .text-gray-500 {
   --tw-text-opacity: 1;
   color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+.text-gray-600 {
+  --tw-text-opacity: 1;
+  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
 }
 .text-gray-700 {
   --tw-text-opacity: 1;

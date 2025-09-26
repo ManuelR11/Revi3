@@ -36,6 +36,18 @@
                             }}</small>
                     </div>
 
+                    <div class="form-col-12">
+                        <label for="complements" class="db-field-title">{{ $t("label.complements") }}</label>
+                        <vue-select class="db-field-control f-b-custom-select" id="complements"
+                            v-bind:class="errors.complements ? 'invalid' : ''"
+                            v-model="props.form.complements" :options="complements" label-by="name"
+                            value-by="id" :multiple="true" :closeOnSelect="false" :searchable="true" :clearOnClose="true" 
+                            :placeholder="$t('label.select_complements')" :search-placeholder="$t('label.search_complements')" />
+                        <small class="db-field-alert" v-if="errors.complements">{{
+                            errors.complements[0]
+                            }}</small>
+                    </div>
+
                     <div class="form-col-12 sm:form-col-6">
                         <label for="tax_id" class="db-field-title">{{ $t("label.tax") }} ({{ $t("label.including")
                         }})</label>
@@ -203,6 +215,9 @@ export default {
         },
         taxes: function () {
             return this.$store.getters['tax/lists'];
+        },
+        complements: function () {
+            return this.$store.getters['complement/lists'] || [];
         }
     },
     mounted() {
@@ -215,6 +230,11 @@ export default {
         this.$store.dispatch('tax/lists', {
             order_column: 'id',
             order_type: 'asc'
+        });
+        this.$store.dispatch('complement/lists', {
+            order_column: 'id',
+            order_type: 'asc',
+            status: statusEnum.ACTIVE
         });
         this.loading.isActive = false;
     },
@@ -236,6 +256,7 @@ export default {
                 item_category_id: null,
                 tax_id: null,
                 status: statusEnum.ACTIVE,
+                complements: [],
             };
             if (this.image) {
                 this.image = "";
@@ -255,6 +276,7 @@ export default {
                 item_category_id: null,
                 tax_id: null,
                 status: statusEnum.ACTIVE,
+                complements: [],
             };
             if (this.image) {
                 this.image = "";

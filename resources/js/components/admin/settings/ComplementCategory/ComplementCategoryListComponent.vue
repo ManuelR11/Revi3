@@ -253,10 +253,10 @@ export default {
                 document.body.removeChild(link);
                 
                 this.loading.isActive = false;
-                alertService.success(this.$t('exported_successfully'));
+                alertService.success(this.$t('message.success_downloading_sample'));
             } catch (error) {
                 this.loading.isActive = false;
-                alertService.error(this.$t('export_error'));
+                alertService.error(this.$t('message.error_downloading_sample'));
             }
         },
         uploadModal: function (id) {
